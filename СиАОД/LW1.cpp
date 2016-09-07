@@ -15,39 +15,39 @@
 int main(int, char *[])
 {
 	const float g = 9.8f;
-	float T;
-	int S;
-	printf("S: ");
-	if (0 == scanf("%d", &S))
+	//float maxTimeLift;
+	int maxHeight;
+	printf("Max Height: ");
+	if (0 == scanf("%d", &maxHeight))
 	{
 		printf("\n" "expected floating-point number" "\n");
 		exit(1);
 	}
-	// T - time point when height is at maximum.
-	// t - current time point
-	// v(t) == v0 - g * t
-	// v0 = g * T
-	// s(t) == v0 * t - 0.5 * g * t * t
-	T = sqrt(S * 2 / g);
-	printf("T=%f\n", T);
-	bool flag = false;
-	for (float t = 0; t < T * 2; t += 0.1f) //TODO: REPLACE FOR TO WHILE
+	// maxTimeLift - time point when height is at maximum.
+	// currentTime - current time point
+	// v(currentTime) == v0 - g * currentTime
+	// v0 = g * maxTimeLift
+	// currentHeight(currentTime) == v0 * currentTime - 0.5 * g * currentTime * currentTime
+	const float maxTimeLift = sqrt(maxHeight * 2 / g);
+	printf("Max Time Lift=%f\n", maxTimeLift);
+	bool doesMaxHeight = false;
+	for (float currentTime = 0; currentTime < maxTimeLift * 2; currentTime += 0.1f) //TODO: REPLACE FOR TO WHILE
 	{
-		if (t > T && !flag)
+		if (currentTime > maxTimeLift && !doesMaxHeight)
 		{
-			flag = true;
-			float V0 = g * T;
-			float s = V0 * T - 0.5 * g * T * T;
-			printf("t=%f, s=%f\n", T, s);
+			doesMaxHeight = true;
+			float initialVelocity = g * maxTimeLift;
+			float currentHeight = initialVelocity * maxTimeLift - 0.5 * g * maxTimeLift * maxTimeLift;
+			printf("Current Time=%f, Current Height=%f\n", maxTimeLift, currentHeight);
 		}
-		float V0 = g * T;
-		float s = V0 * t - 0.5 * g * t * t;
-		printf("t=%f, s=%f\n", t, s);
+		float initialVelocity = g * maxTimeLift;
+		float currentHeight = initialVelocity * currentTime - 0.5 * g * currentTime * currentTime;
+		printf("Current Time=%f, Current Height=%f\n", currentTime, currentHeight);
 	}
 
-	float V0 = g * T;
-	float s = V0 * (T * 2) - 0.5 * g * (T * 2) * (T * 2);
-	printf("t=%f, s=%f\n", T * 2, s);
+	float initialVelocity = g * maxTimeLift;
+	float currentHeight = initialVelocity * (maxTimeLift * 2) - 0.5 * g * (maxTimeLift * 2) * (maxTimeLift * 2);
+	printf("Current Time=%f, Current Height=%f\n", maxTimeLift * 2, currentHeight);
 
 	return 0;
 }
