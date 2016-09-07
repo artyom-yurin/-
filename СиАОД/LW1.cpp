@@ -1,6 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
-#include <iostream>
-#include <cmath>
+#include "stdafx.h"
 
 // This program takes max jump height from input and prints
 // jump height for every time point with step 0.1 seconds.
