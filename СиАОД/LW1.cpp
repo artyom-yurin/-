@@ -12,7 +12,7 @@ void PrintResult(float g, float maxTimeLift, float currentTime)
 	double currentHeight = initialVelocity * currentTime - 0.5 * g * currentTime * currentTime;
 	printf("Current Time=%f, Current Height=%f\n", currentTime, currentHeight);
 }
-
+safe
 int SafeScanf()
 {
 	int bufer = 0;
