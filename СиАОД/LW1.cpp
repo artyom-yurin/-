@@ -8,10 +8,13 @@
 // jump height for every time point with step 0.1 seconds.
 // Program should print all time points when height is min and max.
 
-void PrintResult(float g, float maxTimeLift, float currentTime)
+const float G = 9.8f;
+const float STEP = 0.1f;
+
+void PrintResult(const float g, const float maxTimeLift, const float currentTime)
 {
-	float initialVelocity = g * maxTimeLift;
-	float currentHeight = initialVelocity * currentTime - 0.5 * g * currentTime * currentTime;
+	const float initialVelocity = g * maxTimeLift;
+	const float currentHeight = initialVelocity * currentTime - 0.5 * g * currentTime * currentTime;
 	printf("Current Time=%f, Current Height=%f\n", currentTime, currentHeight);
 }
 
@@ -28,10 +31,9 @@ int SafeScanf()
 
 int main(int, char *[])
 {
-	const float g = 9.8f;
 	printf("Max Height: ");
-	int maxHeight = SafeScanf();
-	float maxTimeLift = sqrt(maxHeight * 2 / g);
+	const int maxHeight = SafeScanf();
+	const float maxTimeLift = sqrt(maxHeight * 2 / G);
 	printf("Max Time Lift=%f\n", maxTimeLift);
 	bool doesMaxHeight = false;
 	float currentTime = 0;
@@ -40,13 +42,13 @@ int main(int, char *[])
 		if (currentTime > maxTimeLift && !doesMaxHeight)
 		{
 			doesMaxHeight = true;
-			PrintResult(g, maxTimeLift, maxTimeLift);
+			PrintResult(G, maxTimeLift, maxTimeLift);
 		}
-		PrintResult(g, maxTimeLift, currentTime);
-		currentTime += 0.1f;
+		PrintResult(G, maxTimeLift, currentTime);
+		currentTime += STEP;
 	}
 
-	PrintResult(g, maxTimeLift, maxTimeLift * 2);
+	PrintResult(G, maxTimeLift, maxTimeLift * 2);
 
 	return 0;
 }
