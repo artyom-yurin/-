@@ -1,7 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <string>
-#include <vector>
 #include <cmath>
 
 // This program takes max jump height from input and prints
@@ -11,10 +9,10 @@
 const float G = 9.8f;
 const float STEP = 0.1f;
 
-void PrintResult(const float g, const float maxTimeLift, const float currentTime)
+void PrintCurrentResult(const float g, const float maxTimeLift, const float currentTime)
 {
 	const float initialVelocity = g * maxTimeLift;
-	const float currentHeight = initialVelocity * currentTime - 0.5 * g * currentTime * currentTime;
+	const float currentHeight = initialVelocity * currentTime - g * currentTime * currentTime / 2;
 	printf("Current Time=%f, Current Height=%f\n", currentTime, currentHeight);
 }
 
@@ -34,26 +32,31 @@ float CalculateMaxTimeLift(const int maxHeight)
 	return sqrt(2 * maxHeight / G);
 }
 
+void PrintAllResults(const float maxTimeLift)
+{
+	bool doesMaxHeight = false;
+	float currentTime = 0;
+	while (currentTime < 2 * maxTimeLift)
+	{
+		if (currentTime > maxTimeLift && !doesMaxHeight)
+		{
+			doesMaxHeight = true;
+			PrintCurrentResult(G, maxTimeLift, maxTimeLift);
+		}
+		PrintCurrentResult(G, maxTimeLift, currentTime);
+		currentTime += STEP;
+	}
+
+	PrintCurrentResult(G, maxTimeLift, 2 * maxTimeLift);
+}
+
 int main(int, char *[])
 {
 	printf("Max Height: ");
 	const int maxHeight = SafeScanf();
 	const float maxTimeLift = CalculateMaxTimeLift(maxHeight);
 	printf("Max Time Lift=%f\n", maxTimeLift);
-	bool doesMaxHeight = false;
-	float currentTime = 0;
-	while (currentTime < maxTimeLift * 2)
-	{
-		if (currentTime > maxTimeLift && !doesMaxHeight)
-		{
-			doesMaxHeight = true;
-			PrintResult(G, maxTimeLift, maxTimeLift);
-		}
-		PrintResult(G, maxTimeLift, currentTime);
-		currentTime += STEP;
-	}
-
-	PrintResult(G, maxTimeLift, maxTimeLift * 2);
+	PrintAllResults(maxTimeLift);
 
 	return 0;
 }
