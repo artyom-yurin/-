@@ -16,9 +16,7 @@ int main(int, char *[])
 {
 	const float g = 9.8f;
 	float T;
-	float Vn;
 	int S;
-	int M; //TODO: REMOVE
 	printf("S: ");
 	if (0 == scanf("%d", &S))
 	{
