@@ -29,11 +29,16 @@ int SafeScanf()
 	return buffer;
 }
 
+float CalculateMaxTimeLift(const int maxHeight)
+{
+	return sqrt(2 * maxHeight / G);
+}
+
 int main(int, char *[])
 {
 	printf("Max Height: ");
 	const int maxHeight = SafeScanf();
-	const float maxTimeLift = sqrt(maxHeight * 2 / G);
+	const float maxTimeLift = CalculateMaxTimeLift(maxHeight);
 	printf("Max Time Lift=%f\n", maxTimeLift);
 	bool doesMaxHeight = false;
 	float currentTime = 0;
