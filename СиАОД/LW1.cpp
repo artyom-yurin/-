@@ -37,7 +37,8 @@ int main(int, char *[])
 	float maxTimeLift = sqrt(maxHeight * 2 / g);
 	printf("Max Time Lift=%f\n", maxTimeLift);
 	bool doesMaxHeight = false;
-	for (float currentTime = 0; currentTime < maxTimeLift * 2; currentTime += 0.1f) //TODO: REPLACE FOR TO WHILE
+	float currentTime = 0;
+	while (currentTime < maxTimeLift * 2)
 	{
 		if (currentTime > maxTimeLift && !doesMaxHeight)
 		{
@@ -45,6 +46,7 @@ int main(int, char *[])
 			printResult(g, maxTimeLift, maxTimeLift);
 		}
 		printResult(g, maxTimeLift, currentTime);
+		currentTime += 0.1f;
 	}
 
 	printResult(g, maxTimeLift, maxTimeLift * 2);
