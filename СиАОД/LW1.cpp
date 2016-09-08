@@ -27,6 +27,11 @@ int SafeScanf()
 
 float CalculateMaxTimeLift(const int maxHeight)
 {
+	if (maxHeight < 0)
+	{
+		printf("\n" "Height can't be negative" "\n");
+		exit(1);
+	}
 	return sqrt(2 * maxHeight / G);
 }
 
