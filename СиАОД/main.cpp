@@ -10,7 +10,7 @@ void PrintCurrentResult(const float g, const float maxTimeLift, const float curr
 	printf("Current Time=%f, Current Height=%f\n", currentTime, currentHeight);
 }
 
-int s_scanf()
+int SafeScanf()
 {
 	int buffer = 0;
 	if (0 == scanf("%d", &buffer))
@@ -52,7 +52,7 @@ void PrintAllResults(const float maxTimeLift)
 int main(int, char *[])
 {
 	printf("Max Height: ");
-	const int maxHeight = s_scanf();
+	const int maxHeight = SafeScanf();
 	const float maxTimeLift = CalculateMaxTimeLift(maxHeight);
 	printf("Max Time Lift=%f\n", maxTimeLift);
 	PrintAllResults(maxTimeLift);
