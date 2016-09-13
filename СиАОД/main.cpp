@@ -1,9 +1,5 @@
 #include "stdafx.h"
 
-// This program takes max jump height from input and prints
-// jump height for every time point with step 0.1 seconds.
-// Program should print all time points when height is min and max.
-
 const float G = 9.8f;
 const float STEP = 0.1f;
 
