@@ -13,7 +13,7 @@ void PrintCurrentResult(const float g, const float maxTimeLift, const float curr
 int s_scanf()
 {
 	int buffer = 0;
-	if (0 == scanf("%d", &buffer))
+	if (scanf("%d", &buffer) == 0)
 	{
 		printf("\n" "expected floating-point number" "\n");
 		exit(1);
