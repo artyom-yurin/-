@@ -16,7 +16,7 @@ int s_scanf()
 	if (scanf("%d", &buffer) == 0)
 	{
 		printf("\n" "expected floating-point number" "\n");
-		exit(1);
+		std::exit(1);
 	}
 	return buffer;
 }
