@@ -10,7 +10,7 @@ void PrintCurrentResult(const float g, const float maxTimeLift, const float curr
 	printf("Current Time=%f, Current Height=%f\n", currentTime, currentHeight);
 }
 
-int s_scanf()
+int SafeScanf()
 {
 	int buffer = 0;
 	if (scanf("%d", &buffer) == 0)
@@ -21,12 +21,12 @@ int s_scanf()
 	return buffer;
 }
 
-float CalculateMaxTimeLift(const int maxHeight)
+float CalculateLiftTimeMax(const int maxHeight)
 {
 	if (maxHeight < 0)
 	{
 		printf("\n" "Height can't be negative" "\n");
-		exit(1);
+		std::exit(1);
 	}
 	return sqrt(2 * maxHeight / G);
 }
@@ -52,8 +52,8 @@ void PrintAllResults(const float maxTimeLift)
 int main(int, char *[])
 {
 	printf("Max Height: ");
-	const int maxHeight = s_scanf();
-	const float maxTimeLift = CalculateMaxTimeLift(maxHeight);
+	const int maxHeight = SafeScanf();
+	const float maxTimeLift = CalculateLiftTimeMax(maxHeight);
 	printf("Max Time Lift=%f\n", maxTimeLift);
 	PrintAllResults(maxTimeLift);
 
