@@ -114,6 +114,7 @@ namespace
 		sf::CircleShape clockCircle;
 		sf::CircleShape centerCircle;
 		Hands clockHands;
+		sf::Event event;
 		void InitApplication()
 		{
 			InitWindow(window);
@@ -148,6 +149,15 @@ namespace
 			window.draw(clockHands.secondsHand);
 			window.draw(centerCircle);
 		}
+		void HandleEvents()
+		{
+			while (window.pollEvent(event))
+			{
+				// Window closed: exit
+				if (event.type == sf::Event::Closed)
+					window.close();
+			}
+		}
 	};
 }
 ////////////////////////////////////////////////////////////
@@ -170,20 +180,12 @@ int main()
 
 	while (app.window.isOpen())
 	{
-		// Handle events
-		sf::Event event;
-		while (app.window.pollEvent(event))
-		{
-			// Window closed: exit
-			if (event.type == sf::Event::Closed)
-				app.window.close();
-		}
+		app.HandleEvents();
 
 		app.Update();
 
 		app.Draw();
 
-		// Display things on screen
 		app.window.display();
 	}
 
