@@ -132,6 +132,22 @@ namespace
 			clockHands.minuteHand.setRotation(ptm->tm_min * 6 + (ptm->tm_sec / 12));
 			clockHands.secondsHand.setRotation(ptm->tm_sec * 6);
 		}
+		void Draw()
+		{
+			window.clear(sf::Color::White);
+
+			window.draw(clockCircle);
+
+			for (int i = 0; i<60; i++)
+			{
+				window.draw(dot[i]);
+			}
+
+			window.draw(clockHands.hourHand);
+			window.draw(clockHands.minuteHand);
+			window.draw(clockHands.secondsHand);
+			window.draw(centerCircle);
+		}
 	};
 }
 ////////////////////////////////////////////////////////////
@@ -165,21 +181,7 @@ int main()
 
 		app.Update();
 
-		// Clear the window
-		app.window.clear(sf::Color::White);
-
-		// Draw all parts of clock
-		app.window.draw(app.clockCircle);
-
-		for (int i = 0; i<60; i++)
-		{
-			app.window.draw(app.dot[i]);
-		}
-
-		app.window.draw(app.clockHands.hourHand);
-		app.window.draw(app.clockHands.minuteHand);
-		app.window.draw(app.clockHands.secondsHand);
-		app.window.draw(app.centerCircle);
+		app.Draw();
 
 		// Display things on screen
 		app.window.display();
