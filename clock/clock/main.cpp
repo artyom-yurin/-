@@ -10,6 +10,10 @@
 
 namespace
 {
+	sf::Vector2f GetWindowCenter(sf::RenderWindow & window)
+	{
+		return sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
+	}
 	struct Hands
 	{
 		sf::RectangleShape hourHand;
@@ -42,7 +46,7 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(screenWidth, screenHeight), "SFML Analog Clock", sf::Style::Close, settings);
 
 	// Define windowCenter which gets the center of the window here, right after creating window
-	sf::Vector2f windowCenter = sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
+	sf::Vector2f windowCenter = GetWindowCenter(window);
 
 	// Create a list for clock's dots
 	sf::CircleShape dot[60];
