@@ -10,6 +10,13 @@
 
 namespace
 {
+	void InitCenterCircle(sf::CircleShape &centerCircle, sf::Vector2f &windowCenter)
+	{
+		centerCircle.setPointCount(100);
+		centerCircle.setFillColor(sf::Color::Red);
+		centerCircle.setOrigin(centerCircle.getGlobalBounds().width / 2, centerCircle.getGlobalBounds().height / 2);
+		centerCircle.setPosition(windowCenter);
+	}
 	void InitWindow(sf::RenderWindow &window)
 	{
 		const int screenWidth = 800;
@@ -108,11 +115,7 @@ int main()
 
 	// Crate another circle for center
 	sf::CircleShape centerCircle(10);
-
-	centerCircle.setPointCount(100);
-	centerCircle.setFillColor(sf::Color::Red);
-	centerCircle.setOrigin(centerCircle.getGlobalBounds().width / 2, centerCircle.getGlobalBounds().height / 2);
-	centerCircle.setPosition(windowCenter);
+	InitCenterCircle(centerCircle, windowCenter);
 
 	// Create hour, minute, and seconds hands
 	Hands clockHands;
