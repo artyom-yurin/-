@@ -44,22 +44,22 @@ namespace
 		sf::RectangleShape hourHand;
 		sf::RectangleShape minuteHand;
 		sf::RectangleShape secondsHand;
+
+		void initHand(sf::RectangleShape &hand, sf::Vector2f &size, sf::Color &color, sf::Vector2f &windowCenter)
+		{
+			hand.setSize(size);
+			hand.setFillColor(color);
+			hand.setOrigin(hand.getGlobalBounds().width / 2, hand.getGlobalBounds().height - 25);
+			hand.setPosition(windowCenter);
+		}
+
+		void InitHands(sf::Vector2f &windowCenter)
+		{
+			initHand(hourHand, sf::Vector2f(5, 180), sf::Color(0, 0, 0), windowCenter);
+			initHand(minuteHand, sf::Vector2f(3, 240), sf::Color(0, 0, 0), windowCenter);
+			initHand(secondsHand, sf::Vector2f(2, 250), sf::Color(255, 0, 0), windowCenter);
+		}
 	};
-
-	void initHand(sf::RectangleShape &hand, sf::Vector2f &size, sf::Color &color, sf::Vector2f &windowCenter)
-	{
-		hand.setSize(size);
-		hand.setFillColor(color);
-		hand.setOrigin(hand.getGlobalBounds().width / 2, hand.getGlobalBounds().height - 25);
-		hand.setPosition(windowCenter);
-	}
-
-	void InitHands(Hands &clockHands, sf::Vector2f &windowCenter)
-	{
-		initHand(clockHands.hourHand, sf::Vector2f(5, 180), sf::Color(0, 0, 0), windowCenter);
-		initHand(clockHands.minuteHand, sf::Vector2f(3, 240), sf::Color(0, 0, 0), windowCenter);
-		initHand(clockHands.secondsHand, sf::Vector2f(2, 250), sf::Color(255, 0, 0), windowCenter);
-	}
 
 	void InitDot(sf::CircleShape &dot, sf::RenderWindow & window, int & position, Coordinates &point)
 	{
@@ -132,7 +132,7 @@ namespace
 			InitDots(dot, window, clockCircleSize);
 			InitOutlineClock(clockCircle, window, clockCircleSize);
 			InitCenterCircle(centerCircle, windowCenter);
-			InitHands(clockHands, windowCenter);
+			clockHands.InitHands(windowCenter);
 			PlayMusic();
 		}
 		void Update()
