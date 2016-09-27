@@ -106,6 +106,14 @@ namespace
 			InitHands(clockHands, windowCenter);
 		}
 	};
+	auto GetSystemTime()
+	{
+		std::time_t currentTime = std::time(NULL);
+
+		struct tm * ptm = localtime(&currentTime);
+		
+		return ptm;
+	}
 }
 ////////////////////////////////////////////////////////////
 /// Entry point of application
@@ -136,10 +144,7 @@ int main()
 				app.window.close();
 		}
 
-		// Get system time
-		std::time_t currentTime = std::time(NULL);
-
-		struct tm * ptm = localtime(&currentTime);
+		auto ptm = GetSystemTime();
 
 		app.clockHands.hourHand.setRotation(ptm->tm_hour * 30 + (ptm->tm_min / 2));
 		app.clockHands.minuteHand.setRotation(ptm->tm_min * 6 + (ptm->tm_sec / 12));
