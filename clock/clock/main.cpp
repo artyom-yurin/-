@@ -20,6 +20,19 @@ namespace
 		sf::RectangleShape minuteHand;
 		sf::RectangleShape secondsHand;
 	};
+	void initHand(sf::RectangleShape &hand, sf::Vector2f &size, sf::Color &color, sf::Vector2f &windowCenter)
+	{
+		hand.setSize(size);
+		hand.setFillColor(color);
+		hand.setOrigin(hand.getGlobalBounds().width / 2, hand.getGlobalBounds().height - 25);
+		hand.setPosition(windowCenter);
+	}
+	void InitHands(Hands &clockHands, sf::Vector2f &windowCenter)
+	{
+		initHand(clockHands.hourHand, sf::Vector2f(5, 180), sf::Color(0, 0, 0), windowCenter);
+		initHand(clockHands.minuteHand, sf::Vector2f(3, 240), sf::Color(0, 0, 0), windowCenter);
+		initHand(clockHands.secondsHand, sf::Vector2f(2, 250), sf::Color(255, 0, 0), windowCenter);
+	}
 }
 ////////////////////////////////////////////////////////////
 /// Entry point of application
@@ -88,21 +101,7 @@ int main()
 	// Create hour, minute, and seconds hands
 	Hands clockHands;
 
-	clockHands.hourHand.setSize(sf::Vector2f(5, 180));
-	clockHands.minuteHand.setSize(sf::Vector2f(3, 240));
-	clockHands.secondsHand.setSize(sf::Vector2f(2, 250));
-
-	clockHands.hourHand.setFillColor(sf::Color::Black);
-	clockHands.minuteHand.setFillColor(sf::Color::Black);
-	clockHands.secondsHand.setFillColor(sf::Color::Red);
-
-	clockHands.hourHand.setOrigin(clockHands.hourHand.getGlobalBounds().width / 2, clockHands.hourHand.getGlobalBounds().height - 25);
-	clockHands.minuteHand.setOrigin(clockHands.minuteHand.getGlobalBounds().width / 2, clockHands.minuteHand.getGlobalBounds().height - 25);
-	clockHands.secondsHand.setOrigin(clockHands.secondsHand.getGlobalBounds().width / 2, clockHands.secondsHand.getGlobalBounds().height - 25);
-
-	clockHands.hourHand.setPosition(windowCenter);
-	clockHands.minuteHand.setPosition(windowCenter);
-	clockHands.secondsHand.setPosition(windowCenter);
+	InitHands(clockHands, windowCenter);
 
 	// Create sound effect
 	/*sf::Music clockTick;
