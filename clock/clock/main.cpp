@@ -18,6 +18,7 @@ namespace
 		centerCircle.setOrigin(centerCircle.getGlobalBounds().width / 2, centerCircle.getGlobalBounds().height / 2);
 		centerCircle.setPosition(windowCenter);
 	}
+
 	void InitWindow(sf::RenderWindow &window)
 	{
 		const int screenWidth = 800;
@@ -26,21 +27,25 @@ namespace
 		settings.antialiasingLevel = 8;
 		window.create(sf::VideoMode(screenWidth, screenHeight), "SFML Analog Clock", sf::Style::Close, settings);
 	}
+
 	struct Coordinates
 	{
 		int x = 0;
 		int y = 0;
 	};
+
 	sf::Vector2f GetWindowCenter(sf::RenderWindow & window)
 	{
 		return sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
 	}
+
 	struct Hands
 	{
 		sf::RectangleShape hourHand;
 		sf::RectangleShape minuteHand;
 		sf::RectangleShape secondsHand;
 	};
+
 	void initHand(sf::RectangleShape &hand, sf::Vector2f &size, sf::Color &color, sf::Vector2f &windowCenter)
 	{
 		hand.setSize(size);
@@ -48,12 +53,14 @@ namespace
 		hand.setOrigin(hand.getGlobalBounds().width / 2, hand.getGlobalBounds().height - 25);
 		hand.setPosition(windowCenter);
 	}
+
 	void InitHands(Hands &clockHands, sf::Vector2f &windowCenter)
 	{
 		initHand(clockHands.hourHand, sf::Vector2f(5, 180), sf::Color(0, 0, 0), windowCenter);
 		initHand(clockHands.minuteHand, sf::Vector2f(3, 240), sf::Color(0, 0, 0), windowCenter);
 		initHand(clockHands.secondsHand, sf::Vector2f(2, 250), sf::Color(255, 0, 0), windowCenter);
 	}
+
 	void InitDot(sf::CircleShape &dot, sf::RenderWindow & window, int & position, Coordinates &point)
 	{
 		if (position % 5 == 0)
@@ -64,6 +71,7 @@ namespace
 		dot.setOrigin(dot.getGlobalBounds().width / 2, dot.getGlobalBounds().height / 2);
 		dot.setPosition(point.x + window.getSize().x / 2, point.y + window.getSize().y / 2);	
 	}
+
 	void InitDots(sf::CircleShape (&dots)[60], sf::RenderWindow & window, const int &clockCircleSize)
 	{
 		const float PI = 3.1415927;
@@ -77,6 +85,7 @@ namespace
 			angle = angle + ((2 * PI) / 60);
 		}
 	}
+
 	void InitOutlineClock(sf::CircleShape &clockCircle, sf::RenderWindow &window, const int & clockCircleSize)
 	{
 		const int clockCircleThickness = 2;
@@ -87,6 +96,16 @@ namespace
 		clockCircle.setOrigin(clockCircle.getGlobalBounds().width / 2, clockCircle.getGlobalBounds().height / 2);
 		clockCircle.setPosition(window.getSize().x / 2 + clockCircleThickness, window.getSize().y / 2 + clockCircleThickness);
 	}
+
+	auto GetSystemTime()
+	{
+		std::time_t currentTime = std::time(NULL);
+
+		struct tm * ptm = localtime(&currentTime);
+
+		return ptm;
+	}
+
 	struct Application
 	{
 		sf::RenderWindow window;
@@ -105,15 +124,15 @@ namespace
 			InitCenterCircle(centerCircle, windowCenter);
 			InitHands(clockHands, windowCenter);
 		}
-	};
-	auto GetSystemTime()
-	{
-		std::time_t currentTime = std::time(NULL);
+		void Update()
+		{
+			auto ptm = GetSystemTime();
 
-		struct tm * ptm = localtime(&currentTime);
-		
-		return ptm;
-	}
+			clockHands.hourHand.setRotation(ptm->tm_hour * 30 + (ptm->tm_min / 2));
+			clockHands.minuteHand.setRotation(ptm->tm_min * 6 + (ptm->tm_sec / 12));
+			clockHands.secondsHand.setRotation(ptm->tm_sec * 6);
+		}
+	};
 }
 ////////////////////////////////////////////////////////////
 /// Entry point of application
@@ -144,11 +163,7 @@ int main()
 				app.window.close();
 		}
 
-		auto ptm = GetSystemTime();
-
-		app.clockHands.hourHand.setRotation(ptm->tm_hour * 30 + (ptm->tm_min / 2));
-		app.clockHands.minuteHand.setRotation(ptm->tm_min * 6 + (ptm->tm_sec / 12));
-		app.clockHands.secondsHand.setRotation(ptm->tm_sec * 6);
+		app.Update();
 
 		// Clear the window
 		app.window.clear(sf::Color::White);
