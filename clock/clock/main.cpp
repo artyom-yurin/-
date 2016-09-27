@@ -106,6 +106,15 @@ namespace
 		return ptm;
 	}
 
+	void PlayMusic() 
+	{
+		/*sf::Music clockTick;
+		if (!clockTick.openFromFile("resources/clock-1.wav"))
+		return EXIT_FAILURE;
+		clockTick.setLoop(true);
+		clockTick.play();*/
+	}
+
 	struct Application
 	{
 		sf::RenderWindow window;
@@ -124,6 +133,7 @@ namespace
 			InitOutlineClock(clockCircle, window, clockCircleSize);
 			InitCenterCircle(centerCircle, windowCenter);
 			InitHands(clockHands, windowCenter);
+			PlayMusic();
 		}
 		void Update()
 		{
@@ -170,13 +180,6 @@ int main()
 {
 	Application app;
 	app.InitApplication();
-
-	// Create sound effect
-	/*sf::Music clockTick;
-	if (!clockTick.openFromFile("resources/clock-1.wav"))
-		return EXIT_FAILURE;
-	clockTick.setLoop(true);
-	clockTick.play();*/
 
 	while (app.window.isOpen())
 	{
