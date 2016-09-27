@@ -61,6 +61,15 @@ namespace
 			angle = angle + ((2 * PI) / 60);
 		}
 	}
+	void InitOutlineClock(sf::CircleShape &clockCircle, sf::RenderWindow &window)
+	{
+		const int clockCircleThickness = 2;
+		clockCircle.setPointCount(100);
+		clockCircle.setOutlineThickness(clockCircleThickness);
+		clockCircle.setOutlineColor(sf::Color::Black);
+		clockCircle.setOrigin(clockCircle.getGlobalBounds().width / 2, clockCircle.getGlobalBounds().height / 2);
+		clockCircle.setPosition(window.getSize().x / 2 + clockCircleThickness, window.getSize().y / 2 + clockCircleThickness);
+	}
 }
 ////////////////////////////////////////////////////////////
 /// Entry point of application
@@ -74,7 +83,6 @@ int main()
 	const int screenWidth = 800;
 	const int screenHeight = 600;
 	const int clockCircleSize = 250;
-	const int clockCircleThickness = 2;
 	
 
 	// Set multisampling level
@@ -93,12 +101,7 @@ int main()
 
 	// Create outline of the clock
 	sf::CircleShape clockCircle(clockCircleSize);
-
-	clockCircle.setPointCount(100);
-	clockCircle.setOutlineThickness(clockCircleThickness);
-	clockCircle.setOutlineColor(sf::Color::Black);
-	clockCircle.setOrigin(clockCircle.getGlobalBounds().width / 2, clockCircle.getGlobalBounds().height / 2);
-	clockCircle.setPosition(window.getSize().x / 2 + clockCircleThickness, window.getSize().y / 2 + clockCircleThickness);
+	InitOutlineClock(clockCircle, window);
 
 	// Crate another circle for center
 	sf::CircleShape centerCircle(10);
@@ -110,7 +113,6 @@ int main()
 
 	// Create hour, minute, and seconds hands
 	Hands clockHands;
-
 	InitHands(clockHands, windowCenter);
 
 	// Create sound effect
