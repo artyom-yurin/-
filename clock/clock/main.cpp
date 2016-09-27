@@ -10,6 +10,11 @@
 
 namespace
 {
+	struct Coordinates
+	{
+		int x = 0;
+		int y = 0;
+	};
 	sf::Vector2f GetWindowCenter(sf::RenderWindow & window)
 	{
 		return sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
@@ -33,6 +38,29 @@ namespace
 		initHand(clockHands.minuteHand, sf::Vector2f(3, 240), sf::Color(0, 0, 0), windowCenter);
 		initHand(clockHands.secondsHand, sf::Vector2f(2, 250), sf::Color(255, 0, 0), windowCenter);
 	}
+	void InitDot(sf::CircleShape &dot, sf::RenderWindow & window, int & position, Coordinates &point)
+	{
+		if (position % 5 == 0)
+			dot = sf::CircleShape(3);
+		else
+			dot = sf::CircleShape(1);
+		dot.setFillColor(sf::Color::Black);
+		dot.setOrigin(dot.getGlobalBounds().width / 2, dot.getGlobalBounds().height / 2);
+		dot.setPosition(point.x + window.getSize().x / 2, point.y + window.getSize().y / 2);	
+	}
+	void InitDots(sf::CircleShape (&dots)[60], sf::RenderWindow & window, const int &clockCircleSize)
+	{
+		const float PI = 3.1415927;
+		float angle = 0.0;
+		Coordinates point;
+		for (int i = 0; i < 60; i++)
+		{
+			point.x = (clockCircleSize - 10) * cos(angle);
+			point.y = (clockCircleSize - 10) * sin(angle);
+			InitDot(dots[i], window, i, point);
+			angle = angle + ((2 * PI) / 60);
+		}
+	}
 }
 ////////////////////////////////////////////////////////////
 /// Entry point of application
@@ -45,11 +73,9 @@ int main()
 	// Define some variables and constants
 	const int screenWidth = 800;
 	const int screenHeight = 600;
-	const float PI = 3.1415927;
 	const int clockCircleSize = 250;
 	const int clockCircleThickness = 2;
-	int x, y;
-	float angle = 0.0;
+	
 
 	// Set multisampling level
 	sf::ContextSettings settings;
@@ -63,23 +89,7 @@ int main()
 
 	// Create a list for clock's dots
 	sf::CircleShape dot[60];
-
-	// Create dots and place them to very right positions
-	for (int i = 0; i<60; i++)
-	{
-		x = (clockCircleSize - 10) * cos(angle);
-		y = (clockCircleSize - 10) * sin(angle);
-
-		if (i % 5 == 0)
-			dot[i] = sf::CircleShape(3);
-		else
-			dot[i] = sf::CircleShape(1);
-		dot[i].setFillColor(sf::Color::Black);
-		dot[i].setOrigin(dot[i].getGlobalBounds().width / 2, dot[i].getGlobalBounds().height / 2);
-		dot[i].setPosition(x + window.getSize().x / 2, y + window.getSize().y / 2);
-
-		angle = angle + ((2 * PI) / 60);
-	}
+	InitDots(dot, window, clockCircleSize);
 
 	// Create outline of the clock
 	sf::CircleShape clockCircle(clockCircleSize);
