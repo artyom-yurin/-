@@ -10,6 +10,14 @@
 
 namespace
 {
+	void InitWindow(sf::RenderWindow &window)
+	{
+		const int screenWidth = 800;
+		const int screenHeight = 600;
+		sf::ContextSettings settings;
+		settings.antialiasingLevel = 8;
+		window.create(sf::VideoMode(screenWidth, screenHeight), "SFML Analog Clock", sf::Style::Close, settings);
+	}
 	struct Coordinates
 	{
 		int x = 0;
@@ -80,17 +88,12 @@ namespace
 int main()
 {
 	// Define some variables and constants
-	const int screenWidth = 800;
-	const int screenHeight = 600;
 	const int clockCircleSize = 250;
 	
 
-	// Set multisampling level
-	sf::ContextSettings settings;
-	settings.antialiasingLevel = 8;
-
 	// Create the window of the application
-	sf::RenderWindow window(sf::VideoMode(screenWidth, screenHeight), "SFML Analog Clock", sf::Style::Close, settings);
+	sf::RenderWindow window;
+	InitWindow(window);
 
 	// Define windowCenter which gets the center of the window here, right after creating window
 	sf::Vector2f windowCenter = GetWindowCenter(window);
