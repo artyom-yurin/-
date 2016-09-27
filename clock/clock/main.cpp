@@ -12,6 +12,7 @@ namespace
 {
 	void InitCenterCircle(sf::CircleShape &centerCircle, sf::Vector2f &windowCenter)
 	{
+		centerCircle.setRadius(10);
 		centerCircle.setPointCount(100);
 		centerCircle.setFillColor(sf::Color::Red);
 		centerCircle.setOrigin(centerCircle.getGlobalBounds().width / 2, centerCircle.getGlobalBounds().height / 2);
@@ -76,15 +77,35 @@ namespace
 			angle = angle + ((2 * PI) / 60);
 		}
 	}
-	void InitOutlineClock(sf::CircleShape &clockCircle, sf::RenderWindow &window)
+	void InitOutlineClock(sf::CircleShape &clockCircle, sf::RenderWindow &window, const int & clockCircleSize)
 	{
 		const int clockCircleThickness = 2;
+		clockCircle.setRadius(clockCircleSize);
 		clockCircle.setPointCount(100);
 		clockCircle.setOutlineThickness(clockCircleThickness);
 		clockCircle.setOutlineColor(sf::Color::Black);
 		clockCircle.setOrigin(clockCircle.getGlobalBounds().width / 2, clockCircle.getGlobalBounds().height / 2);
 		clockCircle.setPosition(window.getSize().x / 2 + clockCircleThickness, window.getSize().y / 2 + clockCircleThickness);
 	}
+	struct Application
+	{
+		sf::RenderWindow window;
+		sf::Vector2f windowCenter = GetWindowCenter(window);
+		sf::CircleShape dot[60];
+		sf::CircleShape clockCircle;
+		sf::CircleShape centerCircle;
+		Hands clockHands;
+		void InitApplication()
+		{
+			InitWindow(window);
+			sf::Vector2f windowCenter = GetWindowCenter(window);
+			const int clockCircleSize = 250;
+			InitDots(dot, window, clockCircleSize);
+			InitOutlineClock(clockCircle, window, clockCircleSize);
+			InitCenterCircle(centerCircle, windowCenter);
+			InitHands(clockHands, windowCenter);
+		}
+	};
 }
 ////////////////////////////////////////////////////////////
 /// Entry point of application
@@ -94,32 +115,8 @@ namespace
 ////////////////////////////////////////////////////////////
 int main()
 {
-	// Define some variables and constants
-	const int clockCircleSize = 250;
-	
-
-	// Create the window of the application
-	sf::RenderWindow window;
-	InitWindow(window);
-
-	// Define windowCenter which gets the center of the window here, right after creating window
-	sf::Vector2f windowCenter = GetWindowCenter(window);
-
-	// Create a list for clock's dots
-	sf::CircleShape dot[60];
-	InitDots(dot, window, clockCircleSize);
-
-	// Create outline of the clock
-	sf::CircleShape clockCircle(clockCircleSize);
-	InitOutlineClock(clockCircle, window);
-
-	// Crate another circle for center
-	sf::CircleShape centerCircle(10);
-	InitCenterCircle(centerCircle, windowCenter);
-
-	// Create hour, minute, and seconds hands
-	Hands clockHands;
-	InitHands(clockHands, windowCenter);
+	Application app;
+	app.InitApplication();
 
 	// Create sound effect
 	/*sf::Music clockTick;
@@ -128,15 +125,15 @@ int main()
 	clockTick.setLoop(true);
 	clockTick.play();*/
 
-	while (window.isOpen())
+	while (app.window.isOpen())
 	{
 		// Handle events
 		sf::Event event;
-		while (window.pollEvent(event))
+		while (app.window.pollEvent(event))
 		{
 			// Window closed: exit
 			if (event.type == sf::Event::Closed)
-				window.close();
+				app.window.close();
 		}
 
 		// Get system time
@@ -144,28 +141,28 @@ int main()
 
 		struct tm * ptm = localtime(&currentTime);
 
-		clockHands.hourHand.setRotation(ptm->tm_hour * 30 + (ptm->tm_min / 2));
-		clockHands.minuteHand.setRotation(ptm->tm_min * 6 + (ptm->tm_sec / 12));
-		clockHands.secondsHand.setRotation(ptm->tm_sec * 6);
+		app.clockHands.hourHand.setRotation(ptm->tm_hour * 30 + (ptm->tm_min / 2));
+		app.clockHands.minuteHand.setRotation(ptm->tm_min * 6 + (ptm->tm_sec / 12));
+		app.clockHands.secondsHand.setRotation(ptm->tm_sec * 6);
 
 		// Clear the window
-		window.clear(sf::Color::White);
+		app.window.clear(sf::Color::White);
 
 		// Draw all parts of clock
-		window.draw(clockCircle);
+		app.window.draw(app.clockCircle);
 
 		for (int i = 0; i<60; i++)
 		{
-			window.draw(dot[i]);
+			app.window.draw(app.dot[i]);
 		}
 
-		window.draw(clockHands.hourHand);
-		window.draw(clockHands.minuteHand);
-		window.draw(clockHands.secondsHand);
-		window.draw(centerCircle);
+		app.window.draw(app.clockHands.hourHand);
+		app.window.draw(app.clockHands.minuteHand);
+		app.window.draw(app.clockHands.secondsHand);
+		app.window.draw(app.centerCircle);
 
 		// Display things on screen
-		window.display();
+		app.window.display();
 	}
 
 	return EXIT_SUCCESS;
