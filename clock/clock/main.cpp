@@ -8,7 +8,15 @@
 #include <ctime>
 #include <cmath>
 
-
+namespace
+{
+	struct Hands
+	{
+		sf::RectangleShape hourHand;
+		sf::RectangleShape minuteHand;
+		sf::RectangleShape secondsHand;
+	};
+}
 ////////////////////////////////////////////////////////////
 /// Entry point of application
 ///
@@ -74,21 +82,23 @@ int main()
 	centerCircle.setPosition(windowCenter);
 
 	// Create hour, minute, and seconds hands
-	sf::RectangleShape hourHand(sf::Vector2f(5, 180));
-	sf::RectangleShape minuteHand(sf::Vector2f(3, 240));
-	sf::RectangleShape secondsHand(sf::Vector2f(2, 250));
+	Hands clockHands;
 
-	hourHand.setFillColor(sf::Color::Black);
-	minuteHand.setFillColor(sf::Color::Black);
-	secondsHand.setFillColor(sf::Color::Red);
+	clockHands.hourHand.setSize(sf::Vector2f(5, 180));
+	clockHands.minuteHand.setSize(sf::Vector2f(3, 240));
+	clockHands.secondsHand.setSize(sf::Vector2f(2, 250));
 
-	hourHand.setOrigin(hourHand.getGlobalBounds().width / 2, hourHand.getGlobalBounds().height - 25);
-	minuteHand.setOrigin(minuteHand.getGlobalBounds().width / 2, minuteHand.getGlobalBounds().height - 25);
-	secondsHand.setOrigin(secondsHand.getGlobalBounds().width / 2, secondsHand.getGlobalBounds().height - 25);
+	clockHands.hourHand.setFillColor(sf::Color::Black);
+	clockHands.minuteHand.setFillColor(sf::Color::Black);
+	clockHands.secondsHand.setFillColor(sf::Color::Red);
 
-	hourHand.setPosition(windowCenter);
-	minuteHand.setPosition(windowCenter);
-	secondsHand.setPosition(windowCenter);
+	clockHands.hourHand.setOrigin(clockHands.hourHand.getGlobalBounds().width / 2, clockHands.hourHand.getGlobalBounds().height - 25);
+	clockHands.minuteHand.setOrigin(clockHands.minuteHand.getGlobalBounds().width / 2, clockHands.minuteHand.getGlobalBounds().height - 25);
+	clockHands.secondsHand.setOrigin(clockHands.secondsHand.getGlobalBounds().width / 2, clockHands.secondsHand.getGlobalBounds().height - 25);
+
+	clockHands.hourHand.setPosition(windowCenter);
+	clockHands.minuteHand.setPosition(windowCenter);
+	clockHands.secondsHand.setPosition(windowCenter);
 
 	// Create sound effect
 	/*sf::Music clockTick;
@@ -96,31 +106,6 @@ int main()
 		return EXIT_FAILURE;
 	clockTick.setLoop(true);
 	clockTick.play();*/
-
-	// Use a part of SFML logo as clock brand
-	/*sf::Texture clockBrand;
-	if (!clockBrand.loadFromFile("resources/clock-brand.png"))
-	{
-		return EXIT_FAILURE;
-	}
-
-	sf::Sprite clockBrandSprite;
-	clockBrandSprite.setTexture(clockBrand);
-	clockBrandSprite.setOrigin(clockBrandSprite.getTextureRect().left + clockBrandSprite.getTextureRect().width / 2.0f,
-		clockBrandSprite.getTextureRect().top + clockBrandSprite.getTextureRect().height / 2.0f);
-
-	clockBrandSprite.setPosition(window.getSize().x / 2, window.getSize().y - 100);*/
-
-
-	// Create clock background
-	/*sf::Texture clockImage;
-	if (!clockImage.loadFromFile("resources/clock-image.png"))
-	{
-		return EXIT_FAILURE;
-	}
-
-	clockCircle.setTexture(&clockImage);
-	clockCircle.setTextureRect(sf::IntRect(40, 0, 700, 700));*/
 
 	while (window.isOpen())
 	{
@@ -138,9 +123,9 @@ int main()
 
 		struct tm * ptm = localtime(&currentTime);
 
-		hourHand.setRotation(ptm->tm_hour * 30 + (ptm->tm_min / 2));
-		minuteHand.setRotation(ptm->tm_min * 6 + (ptm->tm_sec / 12));
-		secondsHand.setRotation(ptm->tm_sec * 6);
+		clockHands.hourHand.setRotation(ptm->tm_hour * 30 + (ptm->tm_min / 2));
+		clockHands.minuteHand.setRotation(ptm->tm_min * 6 + (ptm->tm_sec / 12));
+		clockHands.secondsHand.setRotation(ptm->tm_sec * 6);
 
 		// Clear the window
 		window.clear(sf::Color::White);
@@ -153,10 +138,9 @@ int main()
 			window.draw(dot[i]);
 		}
 
-		//window.draw(clockBrandSprite);
-		window.draw(hourHand);
-		window.draw(minuteHand);
-		window.draw(secondsHand);
+		window.draw(clockHands.hourHand);
+		window.draw(clockHands.minuteHand);
+		window.draw(clockHands.secondsHand);
 		window.draw(centerCircle);
 
 		// Display things on screen
