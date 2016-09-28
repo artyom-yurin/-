@@ -77,7 +77,7 @@ namespace
 		const float PI = 3.1415927;
 		float angle = 0.0;
 		Coordinates point;
-		for (int i = 0; i < 60; i++)
+		for (int i = 0; i < 60; ++i)
 		{
 			point.x = (clockCircleSize - 10) * cos(angle);
 			point.y = (clockCircleSize - 10) * sin(angle);
@@ -106,15 +106,6 @@ namespace
 		return ptm;
 	}
 
-	void PlayMusic() 
-	{
-		/*sf::Music clockTick;
-		if (!clockTick.openFromFile("resources/clock-1.wav"))
-		return EXIT_FAILURE;
-		clockTick.setLoop(true);
-		clockTick.play();*/
-	}
-
 	struct Application
 	{
 		sf::RenderWindow window;
@@ -133,7 +124,6 @@ namespace
 			InitOutlineClock(clockCircle, window, clockCircleSize);
 			InitCenterCircle(centerCircle, windowCenter);
 			clockHands.InitHands(windowCenter);
-			PlayMusic();
 		}
 		void Update()
 		{
@@ -145,11 +135,11 @@ namespace
 		}
 		void Draw()
 		{
-			window.clear(sf::Color::White);
+			
 
 			window.draw(clockCircle);
 
-			for (int i = 0; i<60; i++)
+			for (int i = 0; i < 60; ++i)
 			{
 				window.draw(dot[i]);
 			}
@@ -186,7 +176,7 @@ int main()
 		app.HandleEvents();
 
 		app.Update();
-
+		app.window.clear(sf::Color::White);
 		app.Draw();
 
 		app.window.display();
