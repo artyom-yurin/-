@@ -4,9 +4,10 @@
 // cmath for sin and cos functions
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
 #include <ctime>
 #include <cmath>
+#include <iostream>
+#include <string>
 
 namespace
 {
@@ -106,16 +107,42 @@ namespace
 		return ptm;
 	}
 
+	bool InitClockFace(sf::Text (&numbers)[12], sf::RenderWindow & window, const int &clockCircleSize)
+	{
+		const float PI = 3.1415927;
+		float angle = 0.0;
+		sf::Font font;
+		if (!font.loadFromFile("arial.ttf"))
+		{
+			std::cout << "Error not find file with font" << std::endl;
+			return false;
+		}
+		Coordinates point;
+		for (int i = 0; i < 12; ++i)
+		{
+			point.x = (clockCircleSize - 10) * cos(angle);
+			point.y = (clockCircleSize - 10) * sin(angle);
+			numbers[i].setFont(font);
+			numbers[i].setString(std::to_string(i + 1));
+			numbers[i].setCharacterSize(30);
+			numbers[i].setColor(sf::Color::Black);
+			numbers[i].setPosition(point.x + window.getSize().x / 2, point.y + window.getSize().y / 2);
+			angle = angle + ((2 * PI) / 12);			
+		}
+		return true;
+	}
+
 	struct Application
 	{
 		sf::RenderWindow window;
 		sf::Vector2f windowCenter = GetWindowCenter(window);
 		sf::CircleShape dot[60];
+		sf::Text numbers[12];
 		sf::CircleShape clockCircle;
 		sf::CircleShape centerCircle;
 		Hands clockHands;
 		sf::Event event;
-		void InitApplication()
+		bool InitApplication()
 		{
 			InitWindow(window);
 			sf::Vector2f windowCenter = GetWindowCenter(window);
@@ -124,6 +151,7 @@ namespace
 			InitOutlineClock(clockCircle, window, clockCircleSize);
 			InitCenterCircle(centerCircle, windowCenter);
 			clockHands.InitHands(windowCenter);
+			return InitClockFace(numbers, window, clockCircleSize);
 		}
 		void Update()
 		{
@@ -143,6 +171,11 @@ namespace
 			{
 				window.draw(dot[i]);
 			}
+
+			/*for (int j = 0; j < 12; ++j)
+			{
+				window.draw(numbers[j]);
+			}*/
 
 			window.draw(clockHands.hourHand);
 			window.draw(clockHands.minuteHand);
@@ -169,14 +202,19 @@ namespace
 int main()
 {
 	Application app;
-	app.InitApplication();
+	if (!app.InitApplication())
+	{
+		return EXIT_FAILURE;
+	}
 
 	while (app.window.isOpen())
 	{
 		app.HandleEvents();
 
 		app.Update();
+
 		app.window.clear(sf::Color::White);
+
 		app.Draw();
 
 		app.window.display();
