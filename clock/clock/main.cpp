@@ -3,6 +3,7 @@
 // ctime for getting system time and
 // cmath for sin and cos functions
 ////////////////////////////////////////////////////////////
+#define _USE_MATH_DEFINES
 #include <SFML/Graphics.hpp>
 #include <ctime>
 #include <cmath>
@@ -75,15 +76,12 @@ namespace
 
 	void InitDots(sf::CircleShape (&dots)[60], sf::RenderWindow & window, const int &clockCircleSize)
 	{
-		const float PI = 3.1415927;
-		float angle = 0.0;
 		Coordinates point;
 		for (int i = 0; i < 60; ++i)
 		{
-			point.x = (clockCircleSize - 10) * cos(angle);
-			point.y = (clockCircleSize - 10) * sin(angle);
+			point.x = (clockCircleSize - 10) * cos(i * ((2 * M_PI) / 60));
+			point.y = (clockCircleSize - 10) * sin(i * ((2 * M_PI) / 60));
 			InitDot(dots[i], window, i, point);
-			angle = angle + ((2 * PI) / 60);
 		}
 	}
 
@@ -107,29 +105,35 @@ namespace
 		return ptm;
 	}
 
-	bool InitClockFace(sf::Text (&numbers)[12], sf::RenderWindow & window, const int &clockCircleSize)
+	void SetupFont(sf::Font & font)
 	{
-		const float PI = 3.1415927;
-		float angle = 0.0;
-		sf::Font font;
 		if (!font.loadFromFile("arial.ttf"))
 		{
 			std::cout << "Error not find file with font" << std::endl;
-			return false;
+			std::exit(1);
 		}
-		Coordinates point;
+	}
+
+	sf::Vector2f GetHourNumberCoordinate(int i, const int clockCircleSize, const sf::Vector2f &center)
+	{
+		sf::Vector2f point;
+		const int radius = clockCircleSize - 10;
+		point.x = center.x + radius * cos((i + 1) * ((2 * M_PI) / 12));
+		point.y = center.y + radius * sin((i + 1) * ((2 * M_PI) / 12));
+		return point;
+	}
+
+	void InitClockFace(sf::Text (&numbers)[12], sf::RenderWindow & window, const int clockCircleSize, sf::Font & font)
+	{
 		for (int i = 0; i < 12; ++i)
 		{
-			point.x = (clockCircleSize - 10) * cos(angle);
-			point.y = (clockCircleSize - 10) * sin(angle);
 			numbers[i].setFont(font);
+			numbers[i].setCharacterSize(20);
 			numbers[i].setString(std::to_string(i + 1));
-			numbers[i].setCharacterSize(30);
-			numbers[i].setColor(sf::Color::Black);
-			numbers[i].setPosition(point.x + window.getSize().x / 2, point.y + window.getSize().y / 2);
-			angle = angle + ((2 * PI) / 12);			
+			numbers[i].setFillColor(sf::Color(0, 0, 0));
+			numbers[i].setOutlineColor(sf::Color(0, 0, 0));
+			numbers[i].setPosition(GetHourNumberCoordinate(i, clockCircleSize, GetWindowCenter(window)));
 		}
-		return true;
 	}
 
 	struct Application
@@ -137,12 +141,14 @@ namespace
 		sf::RenderWindow window;
 		sf::Vector2f windowCenter = GetWindowCenter(window);
 		sf::CircleShape dot[60];
+		sf::Font font;
 		sf::Text numbers[12];
 		sf::CircleShape clockCircle;
 		sf::CircleShape centerCircle;
 		Hands clockHands;
 		sf::Event event;
-		bool InitApplication()
+
+		void InitApplication()
 		{
 			InitWindow(window);
 			sf::Vector2f windowCenter = GetWindowCenter(window);
@@ -151,7 +157,8 @@ namespace
 			InitOutlineClock(clockCircle, window, clockCircleSize);
 			InitCenterCircle(centerCircle, windowCenter);
 			clockHands.InitHands(windowCenter);
-			return InitClockFace(numbers, window, clockCircleSize);
+			SetupFont(font);
+			InitClockFace(numbers, window, clockCircleSize, font);
 		}
 		void Update()
 		{
@@ -172,10 +179,10 @@ namespace
 				window.draw(dot[i]);
 			}
 
-			/*for (int j = 0; j < 12; ++j)
+			for (int i = 0; i < 12; ++i)
 			{
-				window.draw(numbers[j]);
-			}*/
+				window.draw(numbers[i]);
+			}
 
 			window.draw(clockHands.hourHand);
 			window.draw(clockHands.minuteHand);
@@ -202,10 +209,7 @@ namespace
 int main()
 {
 	Application app;
-	if (!app.InitApplication())
-	{
-		return EXIT_FAILURE;
-	}
+	app.InitApplication();
 
 	while (app.window.isOpen())
 	{
