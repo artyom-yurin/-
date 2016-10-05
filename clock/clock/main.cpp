@@ -68,7 +68,7 @@ namespace
 		dot.setPosition(point.x + window.getSize().x / 2, point.y + window.getSize().y / 2);	
 	}
 
-	void InitDots(sf::CircleShape (&dots)[60], sf::RenderWindow & window, const int &clockCircleSize)
+	void InitDots(sf::CircleShape (&dots)[60], sf::RenderWindow & window, const float &clockCircleSize)
 	{
 		sf::Vector2f point;
 		for (int i = 0; i < 60; ++i)
@@ -79,9 +79,9 @@ namespace
 		}
 	}
 
-	void InitOutlineClock(sf::CircleShape &clockCircle, sf::RenderWindow &window, const int & clockCircleSize)
+	void InitOutlineClock(sf::CircleShape &clockCircle, sf::RenderWindow &window, const float & clockCircleSize)
 	{
-		const int clockCircleThickness = 2;
+		const float clockCircleThickness = 2.f;
 		clockCircle.setRadius(clockCircleSize);
 		clockCircle.setPointCount(100);
 		clockCircle.setOutlineThickness(clockCircleThickness);
@@ -108,17 +108,17 @@ namespace
 		}
 	}
 
-	sf::Vector2f GetHourNumberCoordinate(int i, const int clockCircleSize, const sf::Vector2f &center)
+	sf::Vector2f GetHourNumberCoordinate(int i, const float clockCircleSize, const sf::Vector2f &center)
 	{
 		sf::Vector2f point;
-		const int radius = clockCircleSize - 28;
-		float angle = (i + 1) * ((2 * M_PI) / 12) - (M_PI / 2);
+		const float radius = clockCircleSize - 28;
+		double angle = (i + 1) * ((2 * M_PI) / 12) - (M_PI / 2);
 		point.x = center.x + radius * cos(angle);
 		point.y = center.y + radius * sin(angle) - 4;
 		return point;
 	}
 
-	void InitClockFace(sf::Text (&numbers)[12], sf::RenderWindow & window, const int clockCircleSize, sf::Font & font)
+	void InitClockFace(sf::Text (&numbers)[12], sf::RenderWindow & window, const float clockCircleSize, sf::Font & font)
 	{
 		for (int i = 0; i < 12; ++i)
 		{
@@ -150,7 +150,7 @@ namespace
 		{
 			InitWindow(window);
 			sf::Vector2f windowCenter = GetWindowCenter(window);
-			const int clockCircleSize = 250;
+			const float clockCircleSize = 250.f;
 			InitDots(dot, window, clockCircleSize);
 			InitOutlineClock(clockCircle, window, clockCircleSize);
 			InitCenterCircle(centerCircle, windowCenter);
