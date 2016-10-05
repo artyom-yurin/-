@@ -30,12 +30,6 @@ namespace
 		window.create(sf::VideoMode(screenWidth, screenHeight), "SFML Analog Clock", sf::Style::Close, settings);
 	}
 
-	struct Coordinates
-	{
-		int x = 0;
-		int y = 0;
-	};
-
 	sf::Vector2f GetWindowCenter(sf::RenderWindow & window)
 	{
 		return sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
@@ -63,7 +57,7 @@ namespace
 		}
 	};
 
-	void InitDot(sf::CircleShape &dot, sf::RenderWindow & window, int & position, Coordinates &point)
+	void InitDot(sf::CircleShape &dot, sf::RenderWindow & window, int & position, sf::Vector2f &point)
 	{
 		if (position % 5 == 0)
 			dot = sf::CircleShape(3);
@@ -76,7 +70,7 @@ namespace
 
 	void InitDots(sf::CircleShape (&dots)[60], sf::RenderWindow & window, const int &clockCircleSize)
 	{
-		Coordinates point;
+		sf::Vector2f point;
 		for (int i = 0; i < 60; ++i)
 		{
 			point.x = (clockCircleSize - 10) * cos(i * ((2 * M_PI) / 60));
@@ -117,9 +111,10 @@ namespace
 	sf::Vector2f GetHourNumberCoordinate(int i, const int clockCircleSize, const sf::Vector2f &center)
 	{
 		sf::Vector2f point;
-		const int radius = clockCircleSize - 10;
-		point.x = center.x + radius * cos((i + 1) * ((2 * M_PI) / 12));
-		point.y = center.y + radius * sin((i + 1) * ((2 * M_PI) / 12));
+		const int radius = clockCircleSize - 28;
+		float angle = (i + 1) * ((2 * M_PI) / 12) - (M_PI / 2);
+		point.x = center.x + radius * cos(angle);
+		point.y = center.y + radius * sin(angle) - 4;
 		return point;
 	}
 
@@ -132,6 +127,9 @@ namespace
 			numbers[i].setString(std::to_string(i + 1));
 			numbers[i].setFillColor(sf::Color(0, 0, 0));
 			numbers[i].setOutlineColor(sf::Color(0, 0, 0));
+			sf::FloatRect textBounds = numbers[i].getGlobalBounds();
+			sf::Vector2f newOrigin(textBounds.width / 2, textBounds.height / 2);
+			numbers[i].setOrigin(newOrigin);
 			numbers[i].setPosition(GetHourNumberCoordinate(i, clockCircleSize, GetWindowCenter(window)));
 		}
 	}
