@@ -1,8 +1,3 @@
-////////////////////////////////////////////////////////////
-// Headers:
-// ctime for getting system time and
-// cmath for sin and cos functions
-////////////////////////////////////////////////////////////
 #define _USE_MATH_DEFINES
 #include <SFML/Graphics.hpp>
 #include <ctime>
@@ -41,7 +36,7 @@ namespace
 		sf::RectangleShape minuteHand;
 		sf::RectangleShape secondsHand;
 
-		void initHand(sf::RectangleShape &hand, sf::Vector2f &size, sf::Color &color, sf::Vector2f &windowCenter)
+		void InitOneHand(sf::RectangleShape &hand, sf::Vector2f &size, sf::Color &color, sf::Vector2f &windowCenter)
 		{
 			hand.setSize(size);
 			hand.setFillColor(color);
@@ -51,9 +46,9 @@ namespace
 
 		void InitHands(sf::Vector2f &windowCenter)
 		{
-			initHand(hourHand, sf::Vector2f(5, 180), sf::Color(0, 0, 0), windowCenter);
-			initHand(minuteHand, sf::Vector2f(3, 240), sf::Color(0, 0, 0), windowCenter);
-			initHand(secondsHand, sf::Vector2f(2, 250), sf::Color(255, 0, 0), windowCenter);
+			InitOneHand(hourHand, sf::Vector2f(5, 180), sf::Color(0, 0, 0), windowCenter);
+			InitOneHand(minuteHand, sf::Vector2f(3, 240), sf::Color(0, 0, 0), windowCenter);
+			InitOneHand(secondsHand, sf::Vector2f(2, 250), sf::Color(255, 0, 0), windowCenter);
 		}
 	};
 
@@ -93,10 +88,11 @@ namespace
 	auto GetSystemTime()
 	{
 		std::time_t currentTime = std::time(NULL);
+		struct tm ptm;
 
-		struct tm * ptm = localtime(&currentTime);
+		localtime_s(&ptm, &currentTime);
 
-		return ptm;
+		return &ptm;
 	}
 
 	void SetupFont(sf::Font & font)
@@ -198,12 +194,7 @@ namespace
 		}
 	};
 }
-////////////////////////////////////////////////////////////
-/// Entry point of application
-///
-/// \return Application exit code
-///
-////////////////////////////////////////////////////////////
+
 int main()
 {
 	Application app;
