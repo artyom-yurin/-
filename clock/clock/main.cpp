@@ -36,7 +36,7 @@ namespace
 		sf::RectangleShape minuteHand;
 		sf::RectangleShape secondsHand;
 
-		void InitOneHand(sf::RectangleShape &hand, sf::Vector2f &size, sf::Color &color, sf::Vector2f &windowCenter)
+		void InitOneHand(sf::RectangleShape &hand, sf::Vector2f size, sf::Color color, sf::Vector2f &windowCenter)
 		{
 			hand.setSize(size);
 			hand.setFillColor(color);
@@ -68,8 +68,8 @@ namespace
 		sf::Vector2f point;
 		for (int i = 0; i < 60; ++i)
 		{
-			point.x = (clockCircleSize - 10) * cos(i * ((2 * M_PI) / 60));
-			point.y = (clockCircleSize - 10) * sin(i * ((2 * M_PI) / 60));
+			point.x = (clockCircleSize - 10) * cos(i * ((float)(2 * M_PI) / 60));
+			point.y = (clockCircleSize - 10) * sin(i * ((float)(2 * M_PI) / 60));
 			InitDot(dots[i], window, i, point);
 		}
 	}
@@ -85,16 +85,6 @@ namespace
 		clockCircle.setPosition(window.getSize().x / 2 + clockCircleThickness, window.getSize().y / 2 + clockCircleThickness);
 	}
 
-	auto GetSystemTime()
-	{
-		std::time_t currentTime = std::time(NULL);
-		struct tm ptm;
-
-		localtime_s(&ptm, &currentTime);
-
-		return &ptm;
-	}
-
 	void SetupFont(sf::Font & font)
 	{
 		if (!font.loadFromFile("arial.ttf"))
@@ -108,7 +98,7 @@ namespace
 	{
 		sf::Vector2f point;
 		const float radius = clockCircleSize - 28;
-		double angle = (i + 1) * ((2 * M_PI) / 12) - (M_PI / 2);
+		float angle = (i + 1) * ((float)(2 * M_PI) / 12) - ((float)M_PI / 2);
 		point.x = center.x + radius * cos(angle);
 		point.y = center.y + radius * sin(angle) - 4;
 		return point;
@@ -133,7 +123,6 @@ namespace
 	struct Application
 	{
 		sf::RenderWindow window;
-		sf::Vector2f windowCenter = GetWindowCenter(window);
 		sf::CircleShape dot[60];
 		sf::Font font;
 		sf::Text numbers[12];
@@ -156,11 +145,13 @@ namespace
 		}
 		void Update()
 		{
-			auto ptm = GetSystemTime();
-
-			clockHands.hourHand.setRotation(ptm->tm_hour * 30 + (ptm->tm_min / 2));
-			clockHands.minuteHand.setRotation(ptm->tm_min * 6 + (ptm->tm_sec / 12));
-			clockHands.secondsHand.setRotation(ptm->tm_sec * 6);
+			std::time_t currentTime = std::time(NULL);
+			struct tm time;
+			auto ptm = &time;
+			localtime_s(ptm, &currentTime);
+			clockHands.hourHand.setRotation((float)ptm->tm_hour * 30 + (ptm->tm_min / 2));
+			clockHands.minuteHand.setRotation((float)ptm->tm_min * 6 + (ptm->tm_sec / 12));
+			clockHands.secondsHand.setRotation((float)ptm->tm_sec * 6);
 		}
 		void Draw()
 		{
