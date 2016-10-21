@@ -54,10 +54,7 @@ namespace
 
 	void InitDot(sf::CircleShape &dot, sf::RenderWindow & window, int & position, sf::Vector2f &point)
 	{
-		if (position % 5 == 0)
-			dot = sf::CircleShape(3);
-		else
-			dot = sf::CircleShape(1);
+		position % 5 == 0 ? dot = sf::CircleShape(3) : dot = sf::CircleShape(1);
 		dot.setFillColor(sf::Color::Black);
 		dot.setOrigin(dot.getGlobalBounds().width / 2, dot.getGlobalBounds().height / 2);
 		dot.setPosition(point.x + window.getSize().x / 2, point.y + window.getSize().y / 2);	
@@ -178,7 +175,6 @@ namespace
 		{
 			while (window.pollEvent(event))
 			{
-				// Window closed: exit
 				if (event.type == sf::Event::Closed)
 					window.close();
 			}
