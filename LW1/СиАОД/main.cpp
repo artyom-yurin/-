@@ -33,13 +33,13 @@ float CalculateLiftTimeMax(const int maxHeight)
 
 void PrintAllResults(const float maxTimeLift)
 {
-	bool doesMaxHeight = false;
+	bool reachedMaxHeight = false;
 	float currentTime = 0;
 	while (currentTime < 2 * maxTimeLift)
 	{
-		if (currentTime > maxTimeLift && !doesMaxHeight)
+		if (currentTime > maxTimeLift && !reachedMaxHeight)
 		{
-			doesMaxHeight = true;
+			reachedMaxHeight = true;
 			PrintCurrentResult(G, maxTimeLift, maxTimeLift);
 		}
 		PrintCurrentResult(G, maxTimeLift, currentTime);

@@ -65,8 +65,10 @@ namespace
 		sf::Vector2f point;
 		for (int i = 0; i < 60; ++i)
 		{
-			point.x = (clockCircleSize - 10) * cos(i * ((float)(2 * M_PI) / 60));
-			point.y = (clockCircleSize - 10) * sin(i * ((float)(2 * M_PI) / 60));
+			const float radius = clockCircleSize - 10;
+			float angle = i * ((float)(2 * M_PI) / 60);
+			const sf::Vector2f direction = { cos(angle), sin(angle) };
+			point = radius * direction;
 			InitDot(dots[i], window, i, point);
 		}
 	}
@@ -93,11 +95,10 @@ namespace
 
 	sf::Vector2f GetHourNumberCoordinate(int i, const float clockCircleSize, const sf::Vector2f &center)
 	{
-		sf::Vector2f point;
 		const float radius = clockCircleSize - 28;
-		float angle = (i + 1) * ((float)(2 * M_PI) / 12) - ((float)M_PI / 2);
-		point.x = center.x + radius * cos(angle);
-		point.y = center.y + radius * sin(angle) - 4;
+		const float angle = (i + 1) * ((float)(2 * M_PI) / 12) - ((float)M_PI / 2);
+		const sf::Vector2f direction = { cos(angle), sin(angle) };
+		const sf::Vector2f point = center + radius * direction + sf::Vector2f{0, -4};
 		return point;
 	}
 
@@ -140,6 +141,7 @@ namespace
 			SetupFont(font);
 			InitClockFace(numbers, window, clockCircleSize, font);
 		}
+
 		void Update()
 		{
 			std::time_t currentTime = std::time(NULL);
@@ -150,20 +152,19 @@ namespace
 			clockHands.minuteHand.setRotation((float)ptm->tm_min * 6 + (ptm->tm_sec / 12));
 			clockHands.secondsHand.setRotation((float)ptm->tm_sec * 6);
 		}
+
 		void Draw()
 		{
-			
-
 			window.draw(clockCircle);
 
-			for (int i = 0; i < 60; ++i)
+			for (auto &item : dot)
 			{
-				window.draw(dot[i]);
+				window.draw(item);
 			}
-
-			for (int i = 0; i < 12; ++i)
+			
+			for (auto &item : numbers)
 			{
-				window.draw(numbers[i]);
+				window.draw(item);
 			}
 
 			window.draw(clockHands.hourHand);
@@ -171,6 +172,7 @@ namespace
 			window.draw(clockHands.secondsHand);
 			window.draw(centerCircle);
 		}
+
 		void HandleEvents()
 		{
 			while (window.pollEvent(event))
