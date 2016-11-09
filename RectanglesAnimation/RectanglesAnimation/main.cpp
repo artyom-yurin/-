@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+const int MAX_INDEX_ELEMENT = 9;
+
+typedef void (*pfn)(sf::RectangleShape (&elements)[MAX_INDEX_ELEMENT]);
+
 void InitWindow(sf::RenderWindow & window)
 {
 	const int screenWidth = 800;
@@ -9,9 +13,9 @@ void InitWindow(sf::RenderWindow & window)
 	window.create(sf::VideoMode(screenWidth, screenHeight), "SFML Animation", sf::Style::Close, settings);
 }
 
-void InitElements(sf::RectangleShape (&elements)[8])
+void InitElements(sf::RectangleShape (&elements)[MAX_INDEX_ELEMENT])
 {
-	float width = 50;
+	float width = 600 / (2 * MAX_INDEX_ELEMENT);
 
 	sf::Vector2f size{width, width};
 	for(size_t i = 0; i < sizeof(elements) / sizeof(*elements); ++i)
@@ -24,7 +28,7 @@ void InitElements(sf::RectangleShape (&elements)[8])
 	}
 }
 
-void FirstAnimation(sf::RectangleShape(&elements)[8])
+void FirstAnimation(sf::RectangleShape(&elements)[MAX_INDEX_ELEMENT])
 {
 	for (size_t i = 0; i < sizeof(elements) / sizeof(*elements); ++i)
 	{
@@ -34,46 +38,54 @@ void FirstAnimation(sf::RectangleShape(&elements)[8])
 	}
 }
 
-void SecondAnimation(sf::RectangleShape(&elements)[8])
+void SecondAnimation(sf::RectangleShape(&elements)[MAX_INDEX_ELEMENT])
 {
+
 	for (size_t i = 0; i < sizeof(elements) / sizeof(*elements); ++i)
 	{
 		sf::Vector2f position = elements[i].getPosition();
 		sf::Vector2f size = elements[i].getSize();
-		position.y += 0.2f;
-		size.y -= 0.1f;
+		position.y += 0.4f;
+		if (size.y > (600 / (2 * MAX_INDEX_ELEMENT)) / 2)
+		{
+			size.y -= 0.1f;
+			if (size.y < (600 / (2 * MAX_INDEX_ELEMENT)) / 2)
+			{
+				size.y = (600 / (2 * MAX_INDEX_ELEMENT)) / 2;
+			}
+		}
 		elements[i].setPosition(position);
 		elements[i].setSize(size);
 	}
 }
 
-void ThirdAnimation(sf::RectangleShape(&elements)[8])
+void ThirdAnimation(sf::RectangleShape(&elements)[MAX_INDEX_ELEMENT])
 {
-	float correctY = elements[7].getPosition().y;
+	float correctY = elements[MAX_INDEX_ELEMENT - 1].getPosition().y;
 	for (size_t i = 0; i < sizeof(elements) / sizeof(*elements); ++i)
 	{
 		sf::Vector2f position = elements[i].getPosition();
 		if (position.y < correctY)
 		{
-			position.y += 0.1f * (8 - i);
+			position.y += 0.1f * (MAX_INDEX_ELEMENT - i);
 			if (position.y > correctY)
 			{
 				position.y = correctY;
 			}
-			position.x -= 0.1f * (8 - i);
+			position.x -= 0.1f * (MAX_INDEX_ELEMENT - i);
 			elements[i].setPosition(position);
 		}
 
 	}
 }
 
-void FourthAnimation(sf::RectangleShape(&elements)[8])
+void FourthAnimation(sf::RectangleShape(&elements)[MAX_INDEX_ELEMENT])
 {
 	float correctX = elements[0].getPosition().x;
 	for (size_t i = 0; i < sizeof(elements) / sizeof(*elements); ++i)
 	{
 		sf::Vector2f position = elements[i].getPosition();
-		position.y -= 0.1f * (7 - i);
+		position.y -= 0.1f * (MAX_INDEX_ELEMENT - 1 - i);
 		if (position.x > correctX)
 		{
 			position.x -= 0.1f * i;
@@ -86,12 +98,13 @@ void FourthAnimation(sf::RectangleShape(&elements)[8])
 	}
 }
 
-void FivethAnimation(sf::RectangleShape(&elements)[8])
+void FivethAnimation(sf::RectangleShape(&elements)[MAX_INDEX_ELEMENT])
 {
 	float correctX = 100;
+	float width = (600 / (2 * MAX_INDEX_ELEMENT));
 	for (size_t i = 0; i < sizeof(elements) / sizeof(*elements); ++i)
 	{
-		float correctY = (float) 0.5 * 50 + 10 + (50 + 10) * i;
+		float correctY = (float) 0.5 * width + 10 + (width + 10) * i;
 		sf::Vector2f position = elements[i].getPosition();
 		sf::Vector2f size = elements[i].getSize();
 		if (position.x > correctX)
@@ -104,18 +117,18 @@ void FivethAnimation(sf::RectangleShape(&elements)[8])
 		}
 		if (position.y > correctY)
 		{
-			position.y -= 0.2f;
+			position.y -= 0.4f;
 			if (position.y < correctY)
 			{
 				position.y = correctY;
 			}
 		}
-		if (elements[i].getGlobalBounds().height < 50)
+		if (size.y < width)
 		{
 			size.y += 0.1f;
-			if (elements[i].getGlobalBounds().height > 50)
+			if (size.y > width)
 			{
-				size.y = 50;
+				size.y = width;
 			}
 		}
 		elements[i].setPosition(position);
@@ -123,74 +136,59 @@ void FivethAnimation(sf::RectangleShape(&elements)[8])
 	}
 }
 
+void InitAnimation(pfn(&animations)[5])
+{
+	animations[0] = FirstAnimation;
+	animations[1] = SecondAnimation;
+	animations[2] = ThirdAnimation;
+	animations[3] = FourthAnimation;
+	animations[4] = FivethAnimation;
+}
+
+void SwitchAnimation(const sf::RectangleShape (&elements)[MAX_INDEX_ELEMENT], int & animation)
+{
+	if (animation == 1 && elements[1].getPosition().x > 700)
+	{
+		++animation;
+	}
+	else if (animation == 2 && elements[MAX_INDEX_ELEMENT - 1].getPosition().y > 550)
+	{
+		++animation;
+	}
+	else if (animation == 3 && elements[0].getPosition().y == elements[MAX_INDEX_ELEMENT - 1].getPosition().y)
+	{
+		++animation;
+	}
+	else if (animation == 4 && elements[0].getPosition().x == elements[MAX_INDEX_ELEMENT - 1].getPosition().x)
+	{
+		++animation;
+	}
+	else if (animation == 5 && elements[0].getPosition().x == 100 && elements[0].getPosition().y == 0.5 * (600 / (2 * MAX_INDEX_ELEMENT)) + 10)
+	{
+		animation = 1;
+	}
+
+}
+
 struct Application
 {
 	sf::RenderWindow window;
-	sf::RectangleShape elements[8];
+	sf::RectangleShape elements[MAX_INDEX_ELEMENT];
 	sf::Event event;
+	pfn animations[5];
 	int animation = 1;
 
 	void InitApplication()
 	{
 		InitWindow(window);
 		InitElements(elements);
+		InitAnimation(animations);
 	}
 
 	void Update()
 	{
-		switch (animation)
-		{
-			case 1:
-			{
-				FirstAnimation(elements);
-				if (elements[1].getPosition().x > 700)
-				{
-					++animation;
-				}
-				break;
-			}
-			case 2:
-			{
-				SecondAnimation(elements);
-				if (elements[7].getPosition().y > 550)
-				{
-					++animation;
-				}
-				break;
-			}
-			case 3:
-			{
-				ThirdAnimation(elements);
-				if (elements[0].getPosition().y == elements[7].getPosition().y)
-				{
-					++animation;
-				}
-				break;
-			}
-			case 4:
-			{
-				FourthAnimation(elements);
-				if (elements[0].getPosition().x == elements[7].getPosition().x)
-				{
-					++animation;
-				}
-				break;
-			}
-			case 5:
-			{
-				FivethAnimation(elements);
-				if (elements[0].getPosition().x == 100 && elements[0].getPosition().y == 0.5 * 50 + 10)
-				{
-					++animation;
-				}
-				break;
-			}
-			default:
-			{
-				animation = 1;
-				break;
-			}
-		}
+		animations[animation - 1](elements);
+		SwitchAnimation(elements, animation);
 	}
 
 	void Draw()
@@ -200,6 +198,7 @@ struct Application
 			window.draw(item);
 		}
 	}
+
 	void HandleEvents()
 	{
 		while (window.pollEvent(event))
