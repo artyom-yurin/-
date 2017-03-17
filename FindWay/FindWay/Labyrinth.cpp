@@ -159,7 +159,7 @@ bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Poi
 
 size_t h(size_t y, size_t x, Points & points)
 {
-	return 2 + abs((int)(points.finishPoint->x - x)) + abs((int)(points.finishPoint->y - y));
+	return abs((int)(points.finishPoint->x - x)) + abs((int)(points.finishPoint->y - y));
 }
 
 bool FindWay(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window, Heroes & heroes)
