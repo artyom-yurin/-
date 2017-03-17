@@ -1,14 +1,7 @@
 #include "stdafx.h"
 #include "Labyrinth.h"
 
-void InitWindow(sf::RenderWindow & window)
-{
-	const int screenWidth = 600;
-	const int screenHeight = 600;
-	sf::ContextSettings settings;
-	settings.antialiasingLevel = 8;
-	window.create(sf::VideoMode(screenWidth, screenHeight), "Kolobok", sf::Style::Close, settings);
-}
+
 
 int main(int argc, char * argv[])
 {
@@ -30,17 +23,19 @@ int main(int argc, char * argv[])
 
 	Size size;
 	Points points;
-
+	Heroes heroes;
 	sf::RenderWindow window;
-	InitWindow(window);
+	sf::Image image;
+	image.loadFromFile("images/fox.png");
+	heroes.texture.loadFromImage(image);
 	InitLabyrinth(labyrinth);
-	if (!ReadLabyrinth(input, labyrinth, size, points, window))
+	if (!ReadLabyrinth(input, labyrinth, size, points, window,heroes))
 	{
 		std::cout << "Error: can't read labyrinth\n";
 		return 1;
 	}
 	sf::Event event;
-	FindWay(labyrinth, size, points, window);
+	FindWay(labyrinth, size, points, window, heroes);
 	while (window.isOpen())
 	{
 		while (window.pollEvent(event))
@@ -48,6 +43,7 @@ int main(int argc, char * argv[])
 			if (event.type == sf::Event::Closed)
 				window.close();
 		}
+		DrawLabyrinth(labyrinth, size, window, heroes);
 	}
     return 0;
 }
