@@ -23,6 +23,18 @@ void DrawLabyrinth(Labyrinth & labyrinth, const Size & size, sf::RenderWindow & 
 	window.display();
 }
 
+void BuildPath(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window, Heroes & heroes)
+{
+	auto currCell = points.finishPoint;
+	while (currCell->parent != nullptr)
+	{
+		currCell->rect.setFillColor(sf::Color::Cyan);
+		currCell = currCell->parent;
+		DrawLabyrinth(labyrinth, size, window, heroes);
+	}
+	currCell->rect.setFillColor(sf::Color::Cyan);
+}
+
 void InitLabyrinth(Labyrinth & labyrinth)
 {
 	for (size_t i = 1; i <= MAX_HEIGHT_LABYRINTH; ++i)
@@ -160,10 +172,6 @@ bool FindWay(Labyrinth & labyrinth, const Size & size, Points & points, sf::Rend
 		auto currCell = openList.back();
 		currCell->close = true;
 		currCell->rect.setFillColor(sf::Color::Blue);
-		if (currCell->x == 10 && currCell->y == 10)
-		{
-			int o = 10;
-		}
 		openList.pop_back();
 		if (!labyrinth[currCell->y - 1][currCell->x]->close)
 		{
@@ -243,5 +251,11 @@ bool FindWay(Labyrinth & labyrinth, const Size & size, Points & points, sf::Rend
 		});
 		Sleep(100);
 	}
-	return false;
+
+	if (points.finishPoint->parent == nullptr)
+	{
+		return false;
+	}
+
+	return true;
 }

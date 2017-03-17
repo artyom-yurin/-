@@ -35,7 +35,15 @@ int main(int argc, char * argv[])
 		return 1;
 	}
 	sf::Event event;
-	FindWay(labyrinth, size, points, window, heroes);
+	if (FindWay(labyrinth, size, points, window, heroes))
+	{
+		BuildPath(labyrinth, size, points, window, heroes);
+		std::cout << "Successfully\n";
+	}
+	else
+	{
+		std::cout << "No way\n";
+	}
 	while (window.isOpen())
 	{
 		while (window.pollEvent(event))

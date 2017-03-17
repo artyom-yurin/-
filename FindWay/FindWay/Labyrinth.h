@@ -48,3 +48,5 @@ bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Poi
 bool FindWay(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window, Heroes & heroes);
 
 void DrawLabyrinth(Labyrinth & labyrinth, const Size & size, sf::RenderWindow & window, Heroes & heroes);
+
+void BuildPath(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window, Heroes & heroes);
