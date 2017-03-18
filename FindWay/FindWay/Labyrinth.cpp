@@ -137,7 +137,7 @@ bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Poi
 		return false;
 	}
 	size.height = i;
-	float cellSize = max(600.0f / size.height, 600.0f / size.width);
+	float cellSize = min(600.0f / size.height, 600.0f / size.width);
 	InitWindow(window, (int)(cellSize * size.width), (int)(cellSize * size.height));
 	for (size_t k = 1; k <= size.height; k++)
 	{
