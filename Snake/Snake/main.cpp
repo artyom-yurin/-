@@ -1,15 +1,29 @@
 ﻿#include <iostream>
-#include <conio.h>
-
-#pragma warning(disable:4996) // POSIX устаревшее имя
+#include <windows.h>
+#include <SFML/Graphics.hpp>
 
 // Размеры карты
 const int MAP_WIDTH = 20;
 const int MAP_HEIGHT = 20;
-const int SIZE = MAP_WIDTH * MAP_HEIGHT;
+const int MAP_SIZE = MAP_WIDTH * MAP_HEIGHT;
+
+// Размеры окна
+const int WINDOW_WIDTH = 600;
+const int WINDOW_HEIGHT = 600;
+const float CELL_WIDTH = WINDOW_WIDTH / MAP_WIDTH;
+const float CELL_HEIGHT = WINDOW_HEIGHT / MAP_HEIGHT;
+
+// Y координаты для текста
+const float Y_GAME_OVER = 250;
+const float Y_SCORE = 300;
+const float Y_RESTART = 350;
+
+
 const int SPACE = 0;
 const int WALL = -1;
 const int FOOD = -2;
+
+//  Направление
 enum Direction
 {
 	UP_DIRECTION = 0,
@@ -23,122 +37,216 @@ struct SSnake
 {
 	int headxpos;
 	int headypos;
-	Direction direction = UP_DIRECTION;
+	Direction direction;
+	bool canChangeDirection;
+	// Флаг, двигается ли змея
+	bool move;
 	// Кол-во съеденых продуктов (На сколько длинная змея)
-	int food = 3;
+	int food;
 };
 
-void run();
-void printMap(int * map);
-void initMap(int  * map, SSnake & snake);
-bool move(SSnake & snake, int * map, int dx, int dy);
-void update(SSnake & snake, int * map, bool & running);
-void changeDirection(char key, SSnake & snake);
-void clearScreen();
-void generateFood(int * map);
-
-char getMapValue(int value);
+void Run();
+void InitFont(sf::Font & font);
+void InitMessage(sf::Text & text, sf::Font const & font, std::string const & message, sf::Vector2f & position);
+void PrintMap(int * map, sf::RenderWindow & window);
+void InitMap(int  * map, SSnake & snake);
+void Move(SSnake & snake, int * map, int dx, int dy);
+void Update(SSnake & snake, int * map);
+void ChangeDirection(sf::Event & event, SSnake & snake);
+void GenerateFood(int * map);
+void InitResultWindow(sf::RectangleShape & resultWindow);
+sf::Color GetMapValue(int value);
 
 int main()
 {
-	run();
+	Run();
 	return 0;
 }
 
-// Главная функция игры
-void run()
+// Настройка шрифта
+void InitFont(sf::Font & font)
 {
-	// Карта размером (MAP_WIDTH X MAP_HEIGHT)
-	int map[SIZE] = { 0 };
-	SSnake snake;
-	// Инициализация карт
-	initMap(map, snake);
-	// Флаг, запущена ли игра
-	bool running = true;
-	while (running) {
-		// Если клавиша нажата
-		if (kbhit()) {
-			// Меняем нарпавление нажатием клавиши
-			changeDirection(getch(), snake);
-		}
-		// Обновление карты
-		update(snake, map, running);
+	if (!font.loadFromFile("arial.ttf"))
+	{
+		std::cout << "Error not find file with font" << std::endl;
+		std::exit(1);
+	}
+}
 
+// Настройка сообащения
+void InitMessage(sf::Text & text, sf::Font const & font, std::string const & message, sf::Vector2f & position)
+{
+	text.setFont(font);
+	text.setCharacterSize(30);
+	text.setString(message);
+	text.setFillColor(sf::Color::Black);
+	text.setOrigin(text.getGlobalBounds().width / 2, text.getGlobalBounds().height / 2);
+	text.setPosition(position);
+}
+
+// Настройка окна
+void InitWindow(sf::RenderWindow & window, int width, int height)
+{
+	sf::ContextSettings settings;
+	settings.antialiasingLevel = 8;
+	window.create(sf::VideoMode(width, height), "Snake", sf::Style::Close, settings);
+	window.setKeyRepeatEnabled(false);
+}
+
+// Обработка событий
+void HandleEvents(sf::RenderWindow & window, SSnake & snake, int * map)
+{
+	sf::Event event;
+	while (window.pollEvent(event))
+	{
+		if (event.type == sf::Event::Closed)
+		{
+			window.close();
+		}
+		// Перезапуск игры
+		if (!snake.move && event.key.code == (sf::Keyboard::R))
+		{
+			InitMap(map, snake);
+		}
+		// Меняем направление по нажатию клавиши
+		ChangeDirection(event, snake);
+	}
+}
+
+// Главная функция игры
+void Run()
+{
+	sf::RenderWindow window;
+	InitWindow(window, WINDOW_WIDTH, WINDOW_HEIGHT);
+	// Карта размером (MAP_WIDTH X MAP_HEIGHT)
+	int map[MAP_SIZE] = { 0 };
+	// Шрифт
+	sf::Font font;
+	// Сообщение GAME OVER
+	sf::Text gameOver;
+	gameOver.setStyle(sf::Text::Bold);
+	// Сообщение с очками игрока
+	sf::Text score;
+	// Сообщение о рестарте
+	sf::Text restart;
+	// Змейка
+	SSnake snake;
+	InitFont(font);
+	// Окно для сообщений
+	sf::RectangleShape resultWindow;
+	InitResultWindow(resultWindow);
+	sf::Vector2f position = { WINDOW_WIDTH / 2, Y_GAME_OVER };
+	InitMessage(gameOver, font, "GAME OVER", position);
+	position.y = Y_RESTART;
+	InitMessage(restart, font, "Press R to restart", position);
+	position.y = Y_SCORE;
+	// Инициализация карт
+	InitMap(map, snake);
+
+	while (window.isOpen()) 
+	{
+		HandleEvents(window, snake, map);
+		if (snake.move)
+		{
+			// Обновление карты
+			Update(snake, map);
+		}
+		
 		// Очистка карты
-		clearScreen();
+		window.clear(sf::Color::White);
 
 		// Отрисовка карты
-		printMap(map);
-
-		// Задержка 0.5 секунды
-		_sleep(500);
+		PrintMap(map, window);
+		if (!snake.move)
+		{
+			window.draw(resultWindow);
+			InitMessage(score, font, "Your score " + std::to_string(snake.food), position);
+			window.draw(gameOver);
+			window.draw(score);
+			window.draw(restart);
+		}
+		window.display();
+		if (snake.move)
+		{
+			Sleep(500);
+		}
 	}
-
-	// Печать текста после завершения игры
-	std::cout << "\t\t!!!Game over!!!" << std::endl << "\t\tYour score is: " << snake.food;
-
-	// Задержка, чтобы консоль не закрылась мгонвенно
-	std::cin.ignore();
 }
 
 // Меняет направление змеи
-void changeDirection(char key, SSnake & snake) {
+void ChangeDirection(sf::Event & event, SSnake & snake)
+{
 	/*
 	W ▲
 	A ◄
 	D ►
 	S ▼
 	*/
-	switch (key) {
-	case 'w':
-		if (snake.direction != DOWN_DIRECTION) snake.direction = UP_DIRECTION;
-		break;
-	case 'd':
-		if (snake.direction != LEFT_DIRECTION) snake.direction = RIGHT_DIRECTION;
-		break;
-	case 's':
-		if (snake.direction != UP_DIRECTION) snake.direction = DOWN_DIRECTION;
-		break;
-	case 'a':
-		if (snake.direction != RIGHT_DIRECTION) snake.direction = LEFT_DIRECTION;
-		break;
+	if (snake.canChangeDirection)
+	{
+		if (event.key.code == (sf::Keyboard::Up))
+		{
+			if (snake.direction != DOWN_DIRECTION && snake.direction != UP_DIRECTION)
+			{
+				snake.direction = UP_DIRECTION;
+				snake.canChangeDirection = false;
+			}
+		}
+		if (event.key.code == (sf::Keyboard::Right))
+		{
+			if (snake.direction != LEFT_DIRECTION && snake.direction != RIGHT_DIRECTION)
+			{
+				snake.direction = RIGHT_DIRECTION;
+				snake.canChangeDirection = false;
+			}
+		}
+		if (event.key.code == (sf::Keyboard::Down))
+		{
+			if (snake.direction != UP_DIRECTION && snake.direction != DOWN_DIRECTION)
+			{
+				snake.direction = DOWN_DIRECTION;
+				snake.canChangeDirection = false;
+			}
+		}
+		if (event.key.code == (sf::Keyboard::Left))
+		{
+			if (snake.direction != RIGHT_DIRECTION && snake.direction != LEFT_DIRECTION)
+			{
+				snake.direction = LEFT_DIRECTION;
+				snake.canChangeDirection = false;
+			}
+		}
 	}
 }
 
 // Перемещает голову змеи
-bool move(SSnake & snake, int * map, int dx, int dy) {
+void Move(SSnake & snake, int * map, int dx, int dy) {
 	// Определение новой позиции головы
 	int newx = snake.headxpos + dx;
 	int newy = snake.headypos + dy;
-	bool running = true;
 	// Проверка на еду в новой позиции
 	if (map[newx + newy * MAP_WIDTH] == FOOD) {
 		// Увелечение числа съеденых продуктов (длины змеи)
 		snake.food++;
 
 		// Генерация нового продукта
-		generateFood(map);
+		GenerateFood(map);
 	}
 
 	// Проверка на свободное место в новой позиции
 	else if (map[newx + newy * MAP_WIDTH] != SPACE) {
-		running = false;
+		snake.move = false;
 	}
 
 	// Перемещение головы в новую позицию
 	snake.headxpos = newx;
 	snake.headypos = newy;
+	snake.canChangeDirection = true;
 	map[snake.headxpos + snake.headypos * MAP_WIDTH] = snake.food + 1;
-	return running;
-}
-
-// Очистка экрана
-void clearScreen() {
-	system("cls");
 }
 
 // Генерация новой еды
-void generateFood(int * map) {
+void GenerateFood(int * map) {
 	int x = 0;
 	int y = 0;
 	do {
@@ -154,31 +262,47 @@ void generateFood(int * map) {
 }
 
 // Обновление карты
-void update(SSnake & snake, int * map, bool & running) {
+void Update(SSnake & snake, int * map) {
 	// Перемещение змеи в нужном направлении
 	switch (snake.direction) {
-	case UP_DIRECTION: running = move(snake, map, -1, 0);
+	case UP_DIRECTION: Move(snake, map, 0, -1);
 		break;
-	case RIGHT_DIRECTION: running = move(snake, map, 0, 1);
+	case RIGHT_DIRECTION: Move(snake, map, 1, 0);
 		break;
-	case DOWN_DIRECTION: running = move(snake, map, 1, 0);
+	case DOWN_DIRECTION: Move(snake, map, 0, 1);
 		break;
-	case LEFT_DIRECTION: running = move(snake, map, 0, -1);
+	case LEFT_DIRECTION: Move(snake, map, -1, 0);
 		break;
 	}
 
 	// Перемещение тела змеи
-	for (int i = 0; i < SIZE; i++) {
+	for (int i = 0; i < MAP_SIZE; i++) {
 		if (map[i] > 0) map[i]--;
 	}
 }
 
-// Иницилизация карты
-void initMap(int * map, SSnake & snake)
+// Настройка змейки
+void InitSnake(SSnake & snake)
 {
-	// Добавление головы змеи на карту 
 	snake.headxpos = MAP_WIDTH / 2;
 	snake.headypos = MAP_HEIGHT / 2;
+	snake.direction = UP_DIRECTION;
+	snake.canChangeDirection = true;
+	snake.food = 3;
+	snake.move = true;
+}
+
+// Иницилизация карты
+void InitMap(int * map, SSnake & snake)
+{
+	for (int i = 0; i < MAP_SIZE; ++i)
+	{
+		map[i] = 0;
+	}
+	
+	InitSnake(snake);
+
+	// Добавление головы змеи на карту
 	map[snake.headxpos + snake.headypos * MAP_WIDTH] = 1;
 
 	// Добавление верхней и нижней стенки
@@ -194,34 +318,45 @@ void initMap(int * map, SSnake & snake)
 	}
 
 	// Генерация первой еды
-	generateFood(map);
+	GenerateFood(map);
 }
 
-// Печать карты в консоле
-void printMap(int * map)
+// Печать карты в окне
+void PrintMap(int * map, sf::RenderWindow & window)
 {
-	for (int x = 0; x < MAP_WIDTH; ++x) {
-		for (int y = 0; y < MAP_HEIGHT; ++y) {
+	sf::RectangleShape block({CELL_WIDTH, CELL_HEIGHT});
+	for (int y = 0; y < MAP_HEIGHT; ++y) {
+		for (int x = 0; x < MAP_WIDTH; ++x) {
+			block.setPosition(CELL_WIDTH * x, CELL_HEIGHT * y);
 			// Печать карты по значению ячейки
-			std::cout << getMapValue(map[x + y * MAP_WIDTH]);
-		}
-		// Конец строки
-		std::cout << std::endl;
+			block.setFillColor(GetMapValue(map[x + y * MAP_WIDTH]));
+			window.draw(block);
+		};
 	}
 }
 
 // Возвращает псевдографическое представление значения
-char getMapValue(int value)
+sf::Color GetMapValue(int value)
 {
-	// Возвращает значок тела змеи 
-	if (value > 0) return 'o';
+	// Возвращает цвет тела змеи 
+	if (value > 0) return sf::Color::Green;
 
 	switch (value) {
-		// Возвращает значок стены
-	case WALL: return 'X';
-		// Возвращает значок еды
-	case FOOD: return 'O';
+		// Возвращает цвет стены
+	case WALL: return sf::Color::Black;
+		// Возвращает цвет еды
+	case FOOD: return sf::Color::Red;
 	}
 
-	return ' ';
+	return sf::Color::White;
+}
+
+// Настройка окна для сообщения
+void InitResultWindow(sf::RectangleShape & resultWindow)
+{
+	resultWindow.setSize({300, 200});
+	resultWindow.setOrigin(resultWindow.getGlobalBounds().width / 2, resultWindow.getGlobalBounds().height / 2);
+	resultWindow.setPosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+	resultWindow.setOutlineThickness(3);
+	resultWindow.setOutlineColor(sf::Color::Black);
 }
