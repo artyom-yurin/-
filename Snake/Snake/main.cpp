@@ -2,16 +2,6 @@
 #include <conio.h>
 
 #pragma warning(disable:4996) // POSIX устаревшее имя
-void run();
-void printMap();
-void initMap();
-void move(int dx, int dy);
-void update();
-void changeDirection(char key);
-void clearScreen();
-void generateFood();
-
-char getMapValue(int value);
 
 // Размеры карты
 const int mapwidth = 20;
@@ -19,8 +9,18 @@ const int mapheight = 20;
 
 const int size = mapwidth * mapheight;
 
-// Карта размером (mapwidth X mapheight)
-int map[size];
+void run();
+void printMap(int * map);
+void initMap(int  * map);
+void move(int * map, int dx, int dy);
+void update(int * map);
+void changeDirection(char key);
+void clearScreen();
+void generateFood(int * map);
+
+char getMapValue(int value);
+
+
 
 // Параметры змеи
 int headxpos;
@@ -42,8 +42,10 @@ int main()
 // Главная функция игры
 void run()
 {
+	// Карта размером (mapwidth X mapheight)
+	int map[size] = { 0 };
 	// Инициализация карты
-	initMap();
+	initMap(map);
 	running = true;
 	while (running) {
 		// Если клавиша нажата
@@ -52,13 +54,13 @@ void run()
 			changeDirection(getch());
 		}
 		// Обновление карты
-		update();
+		update(map);
 
 		// Очистка карты
 		clearScreen();
 
 		// Отрисовка карты
-		printMap();
+		printMap(map);
 
 		// Задержка 0.5 секунды
 		_sleep(500);
@@ -96,7 +98,7 @@ void changeDirection(char key) {
 }
 
 // Перемещает голову змеи
-void move(int dx, int dy) {
+void move(int * map, int dx, int dy) {
 	// Определение новой позиции головы
 	int newx = headxpos + dx;
 	int newy = headypos + dy;
@@ -107,7 +109,7 @@ void move(int dx, int dy) {
 		food++;
 
 		// Генерация нового продукта
-		generateFood();
+		generateFood(map);
 	}
 
 	// Проверка на свободное место в новой позиции
@@ -128,7 +130,7 @@ void clearScreen() {
 }
 
 // Генерация новой еды
-void generateFood() {
+void generateFood(int * map) {
 	int x = 0;
 	int y = 0;
 	do {
@@ -144,16 +146,16 @@ void generateFood() {
 }
 
 // Обновление карты
-void update() {
+void update(int * map) {
 	// Перемещение змеи в нужном направлении
 	switch (direction) {
-	case 0: move(-1, 0);
+	case 0: move(map, -1, 0);
 		break;
-	case 1: move(0, 1);
+	case 1: move(map, 0, 1);
 		break;
-	case 2: move(1, 0);
+	case 2: move(map, 1, 0);
 		break;
-	case 3: move(0, -1);
+	case 3: move(map, 0, -1);
 		break;
 	}
 
@@ -164,7 +166,7 @@ void update() {
 }
 
 // Иницилизация карты
-void initMap()
+void initMap(int * map)
 {
 	// Добавление головы змеи на карту 
 	headxpos = mapwidth / 2;
@@ -184,11 +186,11 @@ void initMap()
 	}
 
 	// Генерация первой еды
-	generateFood();
+	generateFood(map);
 }
 
 // Печать карты в консоле
-void printMap()
+void printMap(int * map)
 {
 	for (int x = 0; x < mapwidth; ++x) {
 		for (int y = 0; y < mapheight; ++y) {
