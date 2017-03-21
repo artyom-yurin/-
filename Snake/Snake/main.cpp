@@ -4,17 +4,26 @@
 #pragma warning(disable:4996) // POSIX устаревшее имя
 
 // Размеры карты
-const int mapwidth = 20;
-const int mapheight = 20;
-
-const int size = mapwidth * mapheight;
+const int MAP_WIDTH = 20;
+const int MAP_HEIGHT = 20;
+const int SIZE = MAP_WIDTH * MAP_HEIGHT;
+const int SPACE = 0;
+const int WALL = -1;
+const int FOOD = -2;
+enum Direction
+{
+	UP_DIRECTION = 0,
+	RIGHT_DIRECTION = 1,
+	DOWN_DIRECTION = 2,
+	LEFT_DIRECTION = 3,
+};
 
 // Параметры змеи
 struct SSnake
 {
 	int headxpos;
 	int headypos;
-	int direction = 0;
+	Direction direction = UP_DIRECTION;
 	// Кол-во съеденых продуктов (На сколько длинная змея)
 	int food = 3;
 };
@@ -23,7 +32,7 @@ void run();
 void printMap(int * map);
 void initMap(int  * map, SSnake & snake);
 bool move(SSnake & snake, int * map, int dx, int dy);
-void update(SSnake & snake, int * map, bool running);
+void update(SSnake & snake, int * map, bool & running);
 void changeDirection(char key, SSnake & snake);
 void clearScreen();
 void generateFood(int * map);
@@ -39,8 +48,8 @@ int main()
 // Главная функция игры
 void run()
 {
-	// Карта размером (mapwidth X mapheight)
-	int map[size] = { 0 };
+	// Карта размером (MAP_WIDTH X MAP_HEIGHT)
+	int map[SIZE] = { 0 };
 	SSnake snake;
 	// Инициализация карт
 	initMap(map, snake);
@@ -66,7 +75,7 @@ void run()
 	}
 
 	// Печать текста после завершения игры
-	std::cout << "\t\t!!!Game over!" << std::endl << "\t\tYour score is: " << snake.food;
+	std::cout << "\t\t!!!Game over!!!" << std::endl << "\t\tYour score is: " << snake.food;
 
 	// Задержка, чтобы консоль не закрылась мгонвенно
 	std::cin.ignore();
@@ -82,16 +91,16 @@ void changeDirection(char key, SSnake & snake) {
 	*/
 	switch (key) {
 	case 'w':
-		if (snake.direction != 2) snake.direction = 0;
+		if (snake.direction != DOWN_DIRECTION) snake.direction = UP_DIRECTION;
 		break;
 	case 'd':
-		if (snake.direction != 3) snake.direction = 1;
+		if (snake.direction != LEFT_DIRECTION) snake.direction = RIGHT_DIRECTION;
 		break;
 	case 's':
-		if (snake.direction != 0) snake.direction = 2;
+		if (snake.direction != UP_DIRECTION) snake.direction = DOWN_DIRECTION;
 		break;
 	case 'a':
-		if (snake.direction != 1) snake.direction = 3;
+		if (snake.direction != RIGHT_DIRECTION) snake.direction = LEFT_DIRECTION;
 		break;
 	}
 }
@@ -103,7 +112,7 @@ bool move(SSnake & snake, int * map, int dx, int dy) {
 	int newy = snake.headypos + dy;
 	bool running = true;
 	// Проверка на еду в новой позиции
-	if (map[newx + newy * mapwidth] == -2) {
+	if (map[newx + newy * MAP_WIDTH] == FOOD) {
 		// Увелечение числа съеденых продуктов (длины змеи)
 		snake.food++;
 
@@ -112,14 +121,14 @@ bool move(SSnake & snake, int * map, int dx, int dy) {
 	}
 
 	// Проверка на свободное место в новой позиции
-	else if (map[newx + newy * mapwidth] != 0) {
+	else if (map[newx + newy * MAP_WIDTH] != SPACE) {
 		running = false;
 	}
 
 	// Перемещение головы в новую позицию
 	snake.headxpos = newx;
 	snake.headypos = newy;
-	map[snake.headxpos + snake.headypos * mapwidth] = snake.food + 1;
+	map[snake.headxpos + snake.headypos * MAP_WIDTH] = snake.food + 1;
 	return running;
 }
 
@@ -134,32 +143,32 @@ void generateFood(int * map) {
 	int y = 0;
 	do {
 		// Генерация координат для новой еды
-		x = rand() % (mapwidth - 2) + 1;
-		y = rand() % (mapheight - 2) + 1;
+		x = rand() % (MAP_WIDTH - 2) + 1;
+		y = rand() % (MAP_HEIGHT - 2) + 1;
 
 		// Если локация занята, то перегенерация
-	} while (map[x + y * mapwidth] != 0);
+	} while (map[x + y * MAP_WIDTH] != SPACE);
 
 	// Добавление еды на карту
-	map[x + y * mapwidth] = -2;
+	map[x + y * MAP_WIDTH] = FOOD;
 }
 
 // Обновление карты
-void update(SSnake & snake, int * map, bool running) {
+void update(SSnake & snake, int * map, bool & running) {
 	// Перемещение змеи в нужном направлении
 	switch (snake.direction) {
-	case 0: running = move(snake, map, -1, 0);
+	case UP_DIRECTION: running = move(snake, map, -1, 0);
 		break;
-	case 1: running = move(snake, map, 0, 1);
+	case RIGHT_DIRECTION: running = move(snake, map, 0, 1);
 		break;
-	case 2: running = move(snake, map, 1, 0);
+	case DOWN_DIRECTION: running = move(snake, map, 1, 0);
 		break;
-	case 3: running = move(snake, map, 0, -1);
+	case LEFT_DIRECTION: running = move(snake, map, 0, -1);
 		break;
 	}
 
 	// Перемещение тела змеи
-	for (int i = 0; i < size; i++) {
+	for (int i = 0; i < SIZE; i++) {
 		if (map[i] > 0) map[i]--;
 	}
 }
@@ -168,20 +177,20 @@ void update(SSnake & snake, int * map, bool running) {
 void initMap(int * map, SSnake & snake)
 {
 	// Добавление головы змеи на карту 
-	snake.headxpos = mapwidth / 2;
-	snake.headypos = mapheight / 2;
-	map[snake.headxpos + snake.headypos * mapwidth] = 1;
+	snake.headxpos = MAP_WIDTH / 2;
+	snake.headypos = MAP_HEIGHT / 2;
+	map[snake.headxpos + snake.headypos * MAP_WIDTH] = 1;
 
 	// Добавление верхней и нижней стенки
-	for (int x = 0; x < mapwidth; ++x) {
-		map[x] = -1;
-		map[x + (mapheight - 1) * mapwidth] = -1;
+	for (int x = 0; x < MAP_WIDTH; ++x) {
+		map[x] = WALL;
+		map[x + (MAP_HEIGHT - 1) * MAP_WIDTH] = WALL;
 	}
 
 	// Добавление правой и левой стенки
-	for (int y = 0; y < mapheight; y++) {
-		map[0 + y * mapwidth] = -1;
-		map[(mapwidth - 1) + y * mapwidth] = -1;
+	for (int y = 0; y < MAP_HEIGHT; y++) {
+		map[0 + y * MAP_WIDTH] = WALL;
+		map[(MAP_WIDTH - 1) + y * MAP_WIDTH] = WALL;
 	}
 
 	// Генерация первой еды
@@ -191,10 +200,10 @@ void initMap(int * map, SSnake & snake)
 // Печать карты в консоле
 void printMap(int * map)
 {
-	for (int x = 0; x < mapwidth; ++x) {
-		for (int y = 0; y < mapheight; ++y) {
+	for (int x = 0; x < MAP_WIDTH; ++x) {
+		for (int y = 0; y < MAP_HEIGHT; ++y) {
 			// Печать карты по значению ячейки
-			std::cout << getMapValue(map[x + y * mapwidth]);
+			std::cout << getMapValue(map[x + y * MAP_WIDTH]);
 		}
 		// Конец строки
 		std::cout << std::endl;
@@ -209,9 +218,9 @@ char getMapValue(int value)
 
 	switch (value) {
 		// Возвращает значок стены
-	case -1: return 'X';
+	case WALL: return 'X';
 		// Возвращает значок еды
-	case -2: return 'O';
+	case FOOD: return 'O';
 	}
 
 	return ' ';
