@@ -250,6 +250,7 @@ void GenerateFood(int * map) {
 	int x = 0;
 	int y = 0;
 	do {
+		srand((unsigned int)time(0));
 		// Генерация координат для новой еды
 		x = rand() % (MAP_WIDTH - 2) + 1;
 		y = rand() % (MAP_HEIGHT - 2) + 1;
