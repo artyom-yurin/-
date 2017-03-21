@@ -12,8 +12,8 @@ const int size = mapwidth * mapheight;
 void run();
 void printMap(int * map);
 void initMap(int  * map);
-void move(int * map, int dx, int dy);
-void update(int * map);
+bool move(int * map, int dx, int dy);
+void update(int * map, bool running);
 void changeDirection(char key);
 void clearScreen();
 void generateFood(int * map);
@@ -30,9 +30,6 @@ int direction;
 // Кол-во съеденых продуктов (На сколько длинная змея)
 int food = 3;
 
-// Флаг, запущена ли игра
-bool running;
-
 int main()
 {
 	run();
@@ -46,7 +43,8 @@ void run()
 	int map[size] = { 0 };
 	// Инициализация карты
 	initMap(map);
-	running = true;
+	// Флаг, запущена ли игра
+	bool running = true;
 	while (running) {
 		// Если клавиша нажата
 		if (kbhit()) {
@@ -54,7 +52,7 @@ void run()
 			changeDirection(getch());
 		}
 		// Обновление карты
-		update(map);
+		update(map, running);
 
 		// Очистка карты
 		clearScreen();
@@ -98,11 +96,11 @@ void changeDirection(char key) {
 }
 
 // Перемещает голову змеи
-void move(int * map, int dx, int dy) {
+bool move(int * map, int dx, int dy) {
 	// Определение новой позиции головы
 	int newx = headxpos + dx;
 	int newy = headypos + dy;
-
+	bool running = true;
 	// Проверка на еду в новой позиции
 	if (map[newx + newy * mapwidth] == -2) {
 		// Увелечение числа съеденых продуктов (длины змеи)
@@ -121,7 +119,7 @@ void move(int * map, int dx, int dy) {
 	headxpos = newx;
 	headypos = newy;
 	map[headxpos + headypos * mapwidth] = food + 1;
-
+	return running;
 }
 
 // Очистка экрана
@@ -146,16 +144,16 @@ void generateFood(int * map) {
 }
 
 // Обновление карты
-void update(int * map) {
+void update(int * map, bool running) {
 	// Перемещение змеи в нужном направлении
 	switch (direction) {
-	case 0: move(map, -1, 0);
+	case 0: running = move(map, -1, 0);
 		break;
-	case 1: move(map, 0, 1);
+	case 1: running = move(map, 0, 1);
 		break;
-	case 2: move(map, 1, 0);
+	case 2: running = move(map, 1, 0);
 		break;
-	case 3: move(map, 0, -1);
+	case 3: running = move(map, 0, -1);
 		break;
 	}
 
