@@ -1,7 +1,112 @@
 #include "stdafx.h"
 #include "Labyrinth.h"
 
+void LoadImageFromFile(sf::Image & img, const std::string & fileName)
+{
+	if (!img.loadFromFile(fileName))
+	{
+		std::cout << "Error: Failed to load " + fileName + "\n";
+		std::exit(1);
+	}
+}
 
+void InitFox(sf::RectangleShape & fox, const float cellSize, const Points & points, const sf::Texture & texture)
+{
+	fox.setSize({ cellSize , cellSize });
+	fox.setPosition(cellSize * (points.finishPoint->x - 1), cellSize * (points.finishPoint->y - 1));
+	fox.setTexture(&texture);
+}
+
+void InitKolobok(sf::CircleShape & kolobok, const float cellSize, const Points & points)
+{
+	kolobok.setPosition(cellSize * (points.startPoint->x - 1), cellSize * (points.startPoint->y - 1));
+	kolobok.setRadius(cellSize / 2);
+	kolobok.setFillColor(sf::Color::Yellow);
+}
+
+void InitRectLabirinth(Labyrinth & labyrinth, const float cellSize, const Size & size)
+{
+	for (size_t j = 1; j <= size.height; j++)
+	{
+		for (size_t i = 1; i <= size.width; i++)
+		{
+			labyrinth[i][j]->rect.setSize({ cellSize , cellSize });
+			labyrinth[i][j]->rect.setPosition(cellSize * (i - 1), cellSize * (j - 1));
+		}
+	}
+}
+
+struct Application
+{
+	sf::RenderWindow window;
+	sf::Image image;
+	sf::Texture texture;
+	sf::RectangleShape fox;
+	sf::CircleShape kolobok;
+	Points points;
+	Size size;
+	Labyrinth labyrinth;
+	bool isFoundWay;
+
+	void InitWindow(int width, int height)
+	{
+		sf::ContextSettings settings;
+		settings.antialiasingLevel = 8;
+		window.create(sf::VideoMode(width, height), "Kolobok", sf::Style::Close, settings);
+	}
+
+	void InitApplication(std::istream & input)
+	{
+		InitLabyrinth(labyrinth);
+		if (!ReadLabyrinth(input, labyrinth, size, points))
+		{
+			std::cout << "Error: can't read labyrinth\n";
+			std::exit(1);
+		}
+		LoadImageFromFile(image, "images/fox.png");
+		texture.loadFromImage(image);
+
+		float cellSize = min(600.0f / size.height, 600.0f / size.width);
+		InitWindow((int)(cellSize * size.width), (int)(cellSize * size.height));
+
+		InitRectLabirinth(labyrinth, cellSize, size);
+
+		InitFox(fox, cellSize, points, texture);
+
+		InitKolobok(kolobok, cellSize, points);
+		isFoundWay = false;
+	}
+
+	void Update()
+	{
+
+	}
+
+	void Draw()
+	{
+		for (size_t j = 1; j <= size.width; j++)
+		{
+			for (size_t i = 1; i <= size.height; i++)
+			{
+				window.draw(labyrinth[i][j]->rect);
+			}
+		}
+		window.draw(kolobok);
+		window.draw(fox);
+	}
+
+	void HandleEvents()
+	{
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+			{
+				window.close();
+			}
+		}
+	}
+};
 
 int main(int argc, char * argv[])
 {
@@ -19,23 +124,7 @@ int main(int argc, char * argv[])
 		return 1;
 	}
 
-	Labyrinth labyrinth;
-
-	Size size;
-	Points points;
-	Heroes heroes;
-	sf::RenderWindow window;
-	sf::Image image;
-	image.loadFromFile("images/fox.png");
-	heroes.texture.loadFromImage(image);
-	InitLabyrinth(labyrinth);
-	if (!ReadLabyrinth(input, labyrinth, size, points, window,heroes))
-	{
-		std::cout << "Error: can't read labyrinth\n";
-		return 1;
-	}
-	sf::Event event;
-	if (FindWay(labyrinth, size, points, window, heroes))
+	/*if (FindWay(labyrinth, size, points, window, heroes))
 	{
 		BuildPath(labyrinth, size, points, window, heroes);
 		std::cout << "Successfully\n";
@@ -43,15 +132,30 @@ int main(int argc, char * argv[])
 	else
 	{
 		std::cout << "No way\n";
-	}
-	while (window.isOpen())
+	}*/
+	Application app;
+
+	app.InitApplication(input);
+
+	while (app.window.isOpen())
 	{
-		while (window.pollEvent(event))
+		app.HandleEvents();
+
+		if (!app.isFoundWay)
 		{
-			if (event.type == sf::Event::Closed)
-				window.close();
+			app.Update();
 		}
-		DrawLabyrinth(labyrinth, size, window, heroes);
+
+		app.window.clear(sf::Color::White);
+
+		app.Draw();
+
+		app.window.display();
+
+		if (!app.isFoundWay)
+		{
+			Sleep(500);
+		}
 	}
     return 0;
 }

@@ -32,21 +32,12 @@ struct Size
 	size_t height = 0;
 };
 
-struct Heroes
-{
-	sf::RectangleShape fox;
-	sf::Texture texture;
-	sf::CircleShape kolobok;
-};
-
 typedef std::array<std::array<std::shared_ptr<Cell>, MAX_HEIGHT_LABYRINTH_PROTECTION>, MAX_WIDTH_LABYRINTH_PROTECTION> Labyrinth;
 
 void InitLabyrinth(Labyrinth & labyrinth);
 
-bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Points & points, sf::RenderWindow & window, Heroes & heroes);
+bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Points & points);
 
-bool FindWay(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window, Heroes & heroes);
+bool FindWay(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window);
 
-void DrawLabyrinth(Labyrinth & labyrinth, const Size & size, sf::RenderWindow & window, Heroes & heroes);
-
-void BuildPath(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window, Heroes & heroes);
+void BuildPath(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window);

@@ -1,36 +1,13 @@
 #include "stdafx.h"
 #include "Labyrinth.h"
 
-void InitWindow(sf::RenderWindow & window, int width, int height)
-{
-	sf::ContextSettings settings;
-	settings.antialiasingLevel = 8;
-	window.create(sf::VideoMode(width, height), "Kolobok", sf::Style::Close, settings);
-}
-
-void DrawLabyrinth(Labyrinth & labyrinth, const Size & size, sf::RenderWindow & window, Heroes & heroes)
-{
-	window.clear(sf::Color::White);
-	for (size_t i = 1; i <= size.width; i++)
-	{
-		for (size_t j = 1; j <= size.height; j++)
-		{
-			window.draw(labyrinth[i][j]->rect);
-		}
-	}
-	window.draw(heroes.kolobok);
-	window.draw(heroes.fox);
-	window.display();
-}
-
-void BuildPath(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window, Heroes & heroes)
+void BuildPath(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window)
 {
 	auto currCell = points.finishPoint;
 	while (currCell->parent != nullptr)
 	{
 		currCell->rect.setFillColor(sf::Color::Cyan);
 		currCell = currCell->parent;
-		DrawLabyrinth(labyrinth, size, window, heroes);
 	}
 	currCell->rect.setFillColor(sf::Color::Cyan);
 }
@@ -56,7 +33,7 @@ void InitLabyrinth(Labyrinth & labyrinth)
 	}
 }
 
-bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Points & points, sf::RenderWindow & window, Heroes & heroes)
+bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Points & points)
 {
 	std::string line;
 	size_t i = 0;
@@ -77,19 +54,19 @@ bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Poi
 		}
 		for (size_t j = 0; j < line.size(); ++j)
 		{
+			labyrinth[j + 1][i + 1]->rect.setFillColor(sf::Color::White);
 			switch (line[j])
 			{
 				case '#':
 				{
-					labyrinth[i + 1][j + 1] = std::make_shared<Cell>(true);
-					labyrinth[i + 1][j + 1]->rect.setFillColor(sf::Color::Black);
+					labyrinth[j + 1][i + 1] = std::make_shared<Cell>(true);
+					labyrinth[j + 1][i + 1]->rect.setFillColor(sf::Color::Black);
 					break;
 				}
 				case ' ':
 				{
-					(labyrinth[i + 1][j + 1])->rect.setFillColor(sf::Color::White);
-					(labyrinth[i + 1][j + 1])->x = j + 1;
-					(labyrinth[i + 1][j + 1])->y = i + 1;
+					labyrinth[j + 1][i + 1]->x = j + 1;
+					labyrinth[j + 1][i + 1]->y = i + 1;
 					break;
 				}
 				case 'C':
@@ -102,10 +79,9 @@ bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Poi
 					{
 						return false;
 					}
-					points.startPoint = labyrinth[i + 1][j + 1];
-					labyrinth[i + 1][j + 1]->rect.setFillColor(sf::Color::White);
-					(labyrinth[i + 1][j + 1])->x = j + 1;
-					(labyrinth[i + 1][j + 1])->y = i + 1;
+					points.startPoint = labyrinth[j + 1][i + 1];
+					(labyrinth[j + 1][i + 1])->x = j + 1;
+					(labyrinth[j + 1][i + 1])->y = i + 1;
 					break;
 				}
 				case 'F':
@@ -118,10 +94,9 @@ bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Poi
 					{
 						return false;
 					}
-					points.finishPoint = labyrinth[i + 1][j + 1];
-					labyrinth[i + 1][j + 1]->rect.setFillColor(sf::Color::White);
-					(labyrinth[i + 1][j + 1])->x = j + 1;
-					(labyrinth[i + 1][j + 1])->y = i + 1;
+					points.finishPoint = labyrinth[j + 1][i + 1];
+					labyrinth[j + 1][i + 1]->x = j + 1;
+					labyrinth[j + 1][i + 1]->y = i + 1;
 					break;
 				}
 				default:
@@ -137,23 +112,6 @@ bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Poi
 		return false;
 	}
 	size.height = i;
-	float cellSize = min(600.0f / size.height, 600.0f / size.width);
-	InitWindow(window, (int)(cellSize * size.width), (int)(cellSize * size.height));
-	for (size_t k = 1; k <= size.height; k++)
-	{
-		for (size_t j = 1; j <= size.width; j++)
-		{
-			labyrinth[k][j]->rect.setSize({cellSize , cellSize});
-			labyrinth[k][j]->rect.setPosition(cellSize * (j-1), cellSize * (k-1));
-		}
-	}
-	heroes.kolobok.setRadius(cellSize / 2);
-	heroes.fox.setSize({ cellSize , cellSize });
-	heroes.kolobok.setPosition(cellSize * (points.startPoint->x - 1), cellSize * (points.startPoint->y - 1));
-	heroes.fox.setPosition(cellSize * (points.finishPoint->x - 1), cellSize * (points.finishPoint->y - 1));
-	heroes.kolobok.setFillColor(sf::Color::Yellow);
-	heroes.fox.setTexture(&heroes.texture);
-	DrawLabyrinth(labyrinth, size, window, heroes);
 	return true;
 }
 
@@ -162,7 +120,7 @@ size_t h(size_t y, size_t x, Points & points)
 	return abs((int)(points.finishPoint->x - x)) + abs((int)(points.finishPoint->y - y));
 }
 
-bool FindWay(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window, Heroes & heroes)
+bool FindWay(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window)
 {
 	std::vector<std::shared_ptr<Cell>> openList;
 	points.startPoint->watch = true;
@@ -245,11 +203,9 @@ bool FindWay(Labyrinth & labyrinth, const Size & size, Points & points, sf::Rend
 				labyrinth[currCell->y][currCell->x + 1]->F = newG + newH;
 			}			
 		}
-		DrawLabyrinth(labyrinth, size, window, heroes);
 		std::sort(openList.begin(), openList.end(), [](auto a, auto b){
 			return (a->F > b->F);
 		});
-		Sleep(100);
 	}
 
 	if (points.finishPoint->parent == nullptr)
