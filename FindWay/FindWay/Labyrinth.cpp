@@ -1,15 +1,17 @@
 #include "stdafx.h"
 #include "Labyrinth.h"
 
-void BuildPath(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window)
+bool BuildPath(std::shared_ptr<Cell> & currCell)
 {
-	auto currCell = points.finishPoint;
-	while (currCell->parent != nullptr)
-	{
-		currCell->rect.setFillColor(sf::Color::Cyan);
-		currCell = currCell->parent;
-	}
 	currCell->rect.setFillColor(sf::Color::Cyan);
+	currCell = currCell->parent;
+
+	if (currCell == nullptr)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 void InitLabyrinth(Labyrinth & labyrinth)
@@ -120,98 +122,97 @@ size_t h(size_t y, size_t x, Points & points)
 	return abs((int)(points.finishPoint->x - x)) + abs((int)(points.finishPoint->y - y));
 }
 
-bool FindWay(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window)
+bool FindWay(std::vector<std::shared_ptr<Cell>> & openList, Labyrinth & labyrinth, Points & points)
 {
-	std::vector<std::shared_ptr<Cell>> openList;
-	points.startPoint->watch = true;
-	openList.push_back(points.startPoint);
-	while (!openList.empty() && points.finishPoint->parent == nullptr)
+	auto currCell = openList.back();
+	currCell->close = true;
+	currCell->rect.setFillColor(sf::Color::Blue);
+	openList.pop_back();
+
+	if (!labyrinth[currCell->x][currCell->y - 1]->close)
 	{
-		auto currCell = openList.back();
-		currCell->close = true;
-		currCell->rect.setFillColor(sf::Color::Blue);
-		openList.pop_back();
-		if (!labyrinth[currCell->y - 1][currCell->x]->close)
+		size_t newG = currCell->G + 10;
+		size_t newH = h(currCell->y - 1, currCell->x, points) * 10;
+		if (!labyrinth[currCell->x][currCell->y - 1]->watch)
 		{
-			size_t newG = currCell->G + 10;
-			size_t newH = h(currCell->y - 1, currCell->x, points) * 10;
-			if (!labyrinth[currCell->y - 1][currCell->x]->watch)
-			{
-				labyrinth[currCell->y - 1][currCell->x]->F = newG + newH;
-				labyrinth[currCell->y - 1][currCell->x]->G = newG;
-				labyrinth[currCell->y - 1][currCell->x]->watch = true;
-				labyrinth[currCell->y - 1][currCell->x]->parent = currCell;
-				labyrinth[currCell->y - 1][currCell->x]->rect.setFillColor(sf::Color::Green);
-				openList.push_back(labyrinth[currCell->y - 1][currCell->x]);
-			}
-			else if (labyrinth[currCell->y - 1][currCell->x]->F > newH + newG)
-			{
-				labyrinth[currCell->y - 1][currCell->x]->F = newG + newH;
-			}
+			labyrinth[currCell->x][currCell->y - 1]->F = newG + newH;
+			labyrinth[currCell->x][currCell->y - 1]->G = newG;
+			labyrinth[currCell->x][currCell->y - 1]->watch = true;
+			labyrinth[currCell->x][currCell->y - 1]->parent = currCell;
+			labyrinth[currCell->x][currCell->y - 1]->rect.setFillColor(sf::Color::Green);
+			openList.push_back(labyrinth[currCell->x][currCell->y - 1]);
 		}
-		if (!labyrinth[currCell->y + 1][currCell->x]->close)
+		else if (labyrinth[currCell->x][currCell->y - 1]->F > newH + newG)
 		{
-			size_t newG = currCell->G + 10;
-			size_t newH = h(currCell->y + 1, currCell->x, points) * 10;
-			if (!labyrinth[currCell->y + 1][currCell->x]->watch)
-			{
-				labyrinth[currCell->y + 1][currCell->x]->F = newG + newH;
-				labyrinth[currCell->y + 1][currCell->x]->G = newG;
-				labyrinth[currCell->y + 1][currCell->x]->parent = currCell;
-				labyrinth[currCell->y + 1][currCell->x]->rect.setFillColor(sf::Color::Green);
-				labyrinth[currCell->y + 1][currCell->x]->watch = true;
-				openList.push_back(labyrinth[currCell->y + 1][currCell->x]);
-			}
-			else if (labyrinth[currCell->y + 1][currCell->x]->F > newH + newG)
-			{
-				labyrinth[currCell->y + 1][currCell->x]->F = newG + newH;
-			}
+			labyrinth[currCell->x][currCell->y - 1]->F = newG + newH;
 		}
-		if (!labyrinth[currCell->y][currCell->x - 1]->close)
-		{
-			size_t newG = currCell->G + 10;
-			size_t newH = h(currCell->y, currCell->x - 1, points) * 10;
-			if (!labyrinth[currCell->y][currCell->x - 1]->watch)
-			{
-				labyrinth[currCell->y][currCell->x - 1]->F = newG + newH;
-				labyrinth[currCell->y][currCell->x - 1]->G = newG;
-				labyrinth[currCell->y][currCell->x - 1]->watch = true;
-				labyrinth[currCell->y][currCell->x - 1]->rect.setFillColor(sf::Color::Green);
-				labyrinth[currCell->y][currCell->x - 1]->parent = currCell;
-				openList.push_back(labyrinth[currCell->y][currCell->x - 1]);
-			}
-			else if (labyrinth[currCell->y][currCell->x - 1]->F > newH + newG)
-			{
-				labyrinth[currCell->y][currCell->x - 1]->F = newG + newH;
-			}
-		}
-		if (!labyrinth[currCell->y][currCell->x + 1]->close)
-		{
-			size_t newG = currCell->G + 10;
-			size_t newH = h(currCell->y, currCell->x + 1, points) * 10;
-			if (!labyrinth[currCell->y][currCell->x + 1]->watch)
-			{
-				labyrinth[currCell->y][currCell->x + 1]->F = newG + newH;
-				labyrinth[currCell->y][currCell->x + 1]->G = newG;
-				labyrinth[currCell->y][currCell->x + 1]->watch = true;
-				labyrinth[currCell->y][currCell->x + 1]->parent = currCell;
-				labyrinth[currCell->y][currCell->x + 1]->rect.setFillColor(sf::Color::Green);
-				openList.push_back(labyrinth[currCell->y][currCell->x + 1]);
-			}
-			else if (labyrinth[currCell->y][currCell->x + 1]->F > newH + newG)
-			{
-				labyrinth[currCell->y][currCell->x + 1]->F = newG + newH;
-			}			
-		}
-		std::sort(openList.begin(), openList.end(), [](auto a, auto b){
-			return (a->F > b->F);
-		});
 	}
 
-	if (points.finishPoint->parent == nullptr)
+	if (!labyrinth[currCell->x][currCell->y + 1]->close)
 	{
-		return false;
+		size_t newG = currCell->G + 10;
+		size_t newH = h(currCell->y + 1, currCell->x, points) * 10;
+		if (!labyrinth[currCell->x][currCell->y + 1]->watch)
+		{
+			labyrinth[currCell->x][currCell->y + 1]->F = newG + newH;
+			labyrinth[currCell->x][currCell->y + 1]->G = newG;
+			labyrinth[currCell->x][currCell->y + 1]->parent = currCell;
+			labyrinth[currCell->x][currCell->y + 1]->rect.setFillColor(sf::Color::Green);
+			labyrinth[currCell->x][currCell->y + 1]->watch = true;
+			openList.push_back(labyrinth[currCell->x][currCell->y + 1]);
+		}
+		else if (labyrinth[currCell->x][currCell->y + 1]->F > newH + newG)
+		{
+			labyrinth[currCell->x][currCell->y + 1]->F = newG + newH;
+		}
 	}
 
-	return true;
+	if (!labyrinth[currCell->x - 1][currCell->y]->close)
+	{
+		size_t newG = currCell->G + 10;
+		size_t newH = h(currCell->y, currCell->x - 1, points) * 10;
+		if (!labyrinth[currCell->x - 1][currCell->y]->watch)
+		{
+			labyrinth[currCell->x - 1][currCell->y]->F = newG + newH;
+			labyrinth[currCell->x - 1][currCell->y]->G = newG;
+			labyrinth[currCell->x - 1][currCell->y]->watch = true;
+			labyrinth[currCell->x - 1][currCell->y]->rect.setFillColor(sf::Color::Green);
+			labyrinth[currCell->x - 1][currCell->y]->parent = currCell;
+			openList.push_back(labyrinth[currCell->x - 1][currCell->y]);
+		}
+		else if (labyrinth[currCell->x - 1][currCell->y]->F > newH + newG)
+		{
+			labyrinth[currCell->x - 1][currCell->y]->F = newG + newH;
+		}
+	}
+
+	if (!labyrinth[currCell->x + 1][currCell->y]->close)
+	{
+		size_t newG = currCell->G + 10;
+		size_t newH = h(currCell->y, currCell->x + 1, points) * 10;
+		if (!labyrinth[currCell->x + 1][currCell->y]->watch)
+		{
+			labyrinth[currCell->x + 1][currCell->y]->F = newG + newH;
+			labyrinth[currCell->x + 1][currCell->y]->G = newG;
+			labyrinth[currCell->x + 1][currCell->y]->watch = true;
+			labyrinth[currCell->x + 1][currCell->y]->parent = currCell;
+			labyrinth[currCell->x + 1][currCell->y]->rect.setFillColor(sf::Color::Green);
+			openList.push_back(labyrinth[currCell->x + 1][currCell->y]);
+		}
+		else if (labyrinth[currCell->x + 1][currCell->y]->F > newH + newG)
+		{
+			labyrinth[currCell->x + 1][currCell->y]->F = newG + newH;
+		}			
+	}
+
+	std::sort(openList.begin(), openList.end(), [](auto a, auto b){
+		return (a->F > b->F);
+	});
+
+	if (points.finishPoint->parent != nullptr || openList.empty())
+	{
+		return true;
+	}
+
+	return false;
 }

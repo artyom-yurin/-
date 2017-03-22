@@ -38,6 +38,6 @@ void InitLabyrinth(Labyrinth & labyrinth);
 
 bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Points & points);
 
-bool FindWay(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window);
+bool FindWay(std::vector<std::shared_ptr<Cell>> & openList, Labyrinth & labyrinth, Points & points);
 
-void BuildPath(Labyrinth & labyrinth, const Size & size, Points & points, sf::RenderWindow & window);
+bool BuildPath(std::shared_ptr<Cell> & currCell);

@@ -47,6 +47,8 @@ struct Application
 	Size size;
 	Labyrinth labyrinth;
 	bool isFoundWay;
+	bool isBuildPath;
+	std::vector<std::shared_ptr<Cell>> openList;
 
 	void InitWindow(int width, int height)
 	{
@@ -75,11 +77,29 @@ struct Application
 
 		InitKolobok(kolobok, cellSize, points);
 		isFoundWay = false;
+		isBuildPath = false;
+
+		points.startPoint->watch = true;
+		openList.push_back(points.startPoint);
 	}
 
 	void Update()
 	{
-
+		if (!isFoundWay)
+		{
+			isFoundWay = FindWay(openList, labyrinth, points);
+		}
+		else
+		{
+			if (!openList.empty())
+			{
+				isBuildPath = BuildPath(points.finishPoint);
+			}
+			else
+			{
+				isBuildPath = true;
+			}
+		}
 	}
 
 	void Draw()
@@ -124,15 +144,6 @@ int main(int argc, char * argv[])
 		return 1;
 	}
 
-	/*if (FindWay(labyrinth, size, points, window, heroes))
-	{
-		BuildPath(labyrinth, size, points, window, heroes);
-		std::cout << "Successfully\n";
-	}
-	else
-	{
-		std::cout << "No way\n";
-	}*/
 	Application app;
 
 	app.InitApplication(input);
@@ -141,7 +152,7 @@ int main(int argc, char * argv[])
 	{
 		app.HandleEvents();
 
-		if (!app.isFoundWay)
+		if (!app.isBuildPath)
 		{
 			app.Update();
 		}
@@ -152,7 +163,7 @@ int main(int argc, char * argv[])
 
 		app.window.display();
 
-		if (!app.isFoundWay)
+		if (!app.isBuildPath)
 		{
 			Sleep(500);
 		}
