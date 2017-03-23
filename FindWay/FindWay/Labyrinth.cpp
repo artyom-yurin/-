@@ -119,7 +119,7 @@ bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Poi
 	return true;
 }
 
-size_t h(size_t y, size_t x, Points & points)
+size_t HeuristicFunction(size_t y, size_t x, Points & points)
 {
 	return abs((int)(points.finishPoint->x - x)) + abs((int)(points.finishPoint->y - y));
 }
@@ -134,7 +134,7 @@ bool FindWay(std::vector<std::shared_ptr<Cell>> & openList, Labyrinth & labyrint
 	if (!labyrinth[currCell->x][currCell->y - 1]->close)
 	{
 		size_t newG = currCell->G + 10;
-		size_t newH = h(currCell->y - 1, currCell->x, points) * 10;
+		size_t newH = HeuristicFunction(currCell->y - 1, currCell->x, points) * 10;
 		if (!labyrinth[currCell->x][currCell->y - 1]->watch)
 		{
 			labyrinth[currCell->x][currCell->y - 1]->F = newG + newH;
@@ -153,7 +153,7 @@ bool FindWay(std::vector<std::shared_ptr<Cell>> & openList, Labyrinth & labyrint
 	if (!labyrinth[currCell->x][currCell->y + 1]->close)
 	{
 		size_t newG = currCell->G + 10;
-		size_t newH = h(currCell->y + 1, currCell->x, points) * 10;
+		size_t newH = HeuristicFunction(currCell->y + 1, currCell->x, points) * 10;
 		if (!labyrinth[currCell->x][currCell->y + 1]->watch)
 		{
 			labyrinth[currCell->x][currCell->y + 1]->F = newG + newH;
@@ -172,7 +172,7 @@ bool FindWay(std::vector<std::shared_ptr<Cell>> & openList, Labyrinth & labyrint
 	if (!labyrinth[currCell->x - 1][currCell->y]->close)
 	{
 		size_t newG = currCell->G + 10;
-		size_t newH = h(currCell->y, currCell->x - 1, points) * 10;
+		size_t newH = HeuristicFunction(currCell->y, currCell->x - 1, points) * 10;
 		if (!labyrinth[currCell->x - 1][currCell->y]->watch)
 		{
 			labyrinth[currCell->x - 1][currCell->y]->F = newG + newH;
@@ -191,7 +191,7 @@ bool FindWay(std::vector<std::shared_ptr<Cell>> & openList, Labyrinth & labyrint
 	if (!labyrinth[currCell->x + 1][currCell->y]->close)
 	{
 		size_t newG = currCell->G + 10;
-		size_t newH = h(currCell->y, currCell->x + 1, points) * 10;
+		size_t newH = HeuristicFunction(currCell->y, currCell->x + 1, points) * 10;
 		if (!labyrinth[currCell->x + 1][currCell->y]->watch)
 		{
 			labyrinth[currCell->x + 1][currCell->y]->F = newG + newH;
