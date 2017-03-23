@@ -15,8 +15,8 @@ struct Cell
 	size_t y;
 	bool watch = false;
 	bool close;
-	size_t F = 0;
-	size_t G = 0;
+	size_t priceCell = 0;
+	size_t priceFromStart = 0;
 	std::shared_ptr<Cell> parent = nullptr;
 };
 
