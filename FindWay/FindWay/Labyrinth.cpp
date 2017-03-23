@@ -35,11 +35,18 @@ void InitLabyrinth(Labyrinth & labyrinth)
 	}
 }
 
+void InitCell(std::shared_ptr<Cell> & currCell, int x, int y)
+{
+	currCell->rect.setFillColor(sf::Color::White);
+	currCell->x = x;
+	currCell->y = y;
+}
+
 bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Points & points)
 {
 	std::string line;
 	size_t i = 0;
-	int countPoint = 0;
+	int countPoints = 0;
 	while (getline(input, line))
 	{
 		if (i > MAX_HEIGHT_LABYRINTH)
@@ -56,49 +63,44 @@ bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Poi
 		}
 		for (size_t j = 0; j < line.size(); ++j)
 		{
-			labyrinth[j + 1][i + 1]->rect.setFillColor(sf::Color::White);
+			auto currCell = labyrinth[j + 1][i + 1];
+			InitCell(currCell, j + 1, i + 1);
 			switch (line[j])
 			{
 				case '#':
 				{
-					labyrinth[j + 1][i + 1] = std::make_shared<Cell>(true);
-					labyrinth[j + 1][i + 1]->rect.setFillColor(sf::Color::Black);
+					currCell->close = true;
+					currCell->rect.setFillColor(sf::Color::Black);
 					break;
 				}
 				case ' ':
 				{
-					labyrinth[j + 1][i + 1]->x = j + 1;
-					labyrinth[j + 1][i + 1]->y = i + 1;
 					break;
 				}
 				case 'C':
 				{
-					if (countPoint < 2)
+					if (countPoints < 2)
 					{
-						++countPoint;
+						++countPoints;
 					}
 					else
 					{
 						return false;
 					}
-					points.startPoint = labyrinth[j + 1][i + 1];
-					(labyrinth[j + 1][i + 1])->x = j + 1;
-					(labyrinth[j + 1][i + 1])->y = i + 1;
+					points.startPoint = currCell;
 					break;
 				}
 				case 'F':
 				{
-					if (countPoint < 2)
+					if (countPoints < 2)
 					{
-						++countPoint;
+						++countPoints;
 					}
 					else
 					{
 						return false;
 					}
-					points.finishPoint = labyrinth[j + 1][i + 1];
-					labyrinth[j + 1][i + 1]->x = j + 1;
-					labyrinth[j + 1][i + 1]->y = i + 1;
+					points.finishPoint = currCell;
 					break;
 				}
 				default:
@@ -109,7 +111,7 @@ bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Poi
 		}
 		++i;
 	}
-	if (countPoint != 2)
+	if (countPoints != 2)
 	{
 		return false;
 	}
