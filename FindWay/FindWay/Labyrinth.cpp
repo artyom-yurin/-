@@ -119,9 +119,34 @@ bool ReadLabyrinth(std::istream & input, Labyrinth & labyrinth, Size & size, Poi
 	return true;
 }
 
-size_t HeuristicFunction(size_t y, size_t x, Points & points)
+size_t HeuristicFunction(size_t y, size_t x, const Points & points)
 {
 	return abs((int)(points.finishPoint->x - x)) + abs((int)(points.finishPoint->y - y));
+}
+
+
+
+void EvaluationCell(std::shared_ptr<Cell> & currCell, std::shared_ptr<Cell> & parent, size_t x, size_t y, const Points & points, std::vector<std::shared_ptr<Cell>> & openList)
+{
+	if (!currCell->close)
+	{
+		size_t newPriceFromStart = parent->priceFromStart + 10;
+		size_t newHeuristicResult = HeuristicFunction(y, x, points) * 10;
+		if (!currCell->watch)
+		{
+			currCell->priceCell = newPriceFromStart + newHeuristicResult;
+			currCell->priceFromStart = newPriceFromStart;
+			currCell->watch = true;
+			currCell->parent = parent;
+			currCell->rect.setFillColor(sf::Color::Green);
+			openList.push_back(currCell);
+		}
+		else if (currCell->priceCell > newHeuristicResult + newPriceFromStart)
+		{
+			currCell->priceCell = newPriceFromStart + newHeuristicResult;
+			currCell->priceFromStart = newPriceFromStart;
+		}
+	}
 }
 
 bool FindWay(std::vector<std::shared_ptr<Cell>> & openList, Labyrinth & labyrinth, Points & points)
@@ -130,82 +155,16 @@ bool FindWay(std::vector<std::shared_ptr<Cell>> & openList, Labyrinth & labyrint
 	currCell->close = true;
 	currCell->rect.setFillColor(sf::Color::Blue);
 	openList.pop_back();
+	size_t x = currCell->x;
+	size_t y = currCell->y;
 
-	if (!labyrinth[currCell->x][currCell->y - 1]->close)
-	{
-		size_t newPriceFromStart = currCell->priceFromStart + 10;
-		size_t newHeuristicResult = HeuristicFunction(currCell->y - 1, currCell->x, points) * 10;
-		if (!labyrinth[currCell->x][currCell->y - 1]->watch)
-		{
-			labyrinth[currCell->x][currCell->y - 1]->priceCell = newPriceFromStart + newHeuristicResult;
-			labyrinth[currCell->x][currCell->y - 1]->priceFromStart = newPriceFromStart;
-			labyrinth[currCell->x][currCell->y - 1]->watch = true;
-			labyrinth[currCell->x][currCell->y - 1]->parent = currCell;
-			labyrinth[currCell->x][currCell->y - 1]->rect.setFillColor(sf::Color::Green);
-			openList.push_back(labyrinth[currCell->x][currCell->y - 1]);
-		}
-		else if (labyrinth[currCell->x][currCell->y - 1]->priceCell > newHeuristicResult + newPriceFromStart)
-		{
-			labyrinth[currCell->x][currCell->y - 1]->priceCell = newPriceFromStart + newHeuristicResult;
-		}
-	}
+	EvaluationCell(labyrinth[x][y - 1], currCell, x, y - 1, points, openList);
 
-	if (!labyrinth[currCell->x][currCell->y + 1]->close)
-	{
-		size_t newPriceFromStart = currCell->priceFromStart + 10;
-		size_t newHeuristicResult = HeuristicFunction(currCell->y + 1, currCell->x, points) * 10;
-		if (!labyrinth[currCell->x][currCell->y + 1]->watch)
-		{
-			labyrinth[currCell->x][currCell->y + 1]->priceCell = newPriceFromStart + newHeuristicResult;
-			labyrinth[currCell->x][currCell->y + 1]->priceFromStart = newPriceFromStart;
-			labyrinth[currCell->x][currCell->y + 1]->parent = currCell;
-			labyrinth[currCell->x][currCell->y + 1]->rect.setFillColor(sf::Color::Green);
-			labyrinth[currCell->x][currCell->y + 1]->watch = true;
-			openList.push_back(labyrinth[currCell->x][currCell->y + 1]);
-		}
-		else if (labyrinth[currCell->x][currCell->y + 1]->priceCell > newHeuristicResult + newPriceFromStart)
-		{
-			labyrinth[currCell->x][currCell->y + 1]->priceCell = newPriceFromStart + newHeuristicResult;
-		}
-	}
+	EvaluationCell(labyrinth[x][y + 1], currCell, x, y + 1, points, openList);
+	
+	EvaluationCell(labyrinth[x - 1][y], currCell, x - 1, y, points, openList);
 
-	if (!labyrinth[currCell->x - 1][currCell->y]->close)
-	{
-		size_t newPriceFromStart = currCell->priceFromStart + 10;
-		size_t newHeuristicResult = HeuristicFunction(currCell->y, currCell->x - 1, points) * 10;
-		if (!labyrinth[currCell->x - 1][currCell->y]->watch)
-		{
-			labyrinth[currCell->x - 1][currCell->y]->priceCell = newPriceFromStart + newHeuristicResult;
-			labyrinth[currCell->x - 1][currCell->y]->priceFromStart = newPriceFromStart;
-			labyrinth[currCell->x - 1][currCell->y]->watch = true;
-			labyrinth[currCell->x - 1][currCell->y]->rect.setFillColor(sf::Color::Green);
-			labyrinth[currCell->x - 1][currCell->y]->parent = currCell;
-			openList.push_back(labyrinth[currCell->x - 1][currCell->y]);
-		}
-		else if (labyrinth[currCell->x - 1][currCell->y]->priceCell > newHeuristicResult + newPriceFromStart)
-		{
-			labyrinth[currCell->x - 1][currCell->y]->priceCell = newPriceFromStart + newHeuristicResult;
-		}
-	}
-
-	if (!labyrinth[currCell->x + 1][currCell->y]->close)
-	{
-		size_t newPriceFromStart = currCell->priceFromStart + 10;
-		size_t newHeuristicResult = HeuristicFunction(currCell->y, currCell->x + 1, points) * 10;
-		if (!labyrinth[currCell->x + 1][currCell->y]->watch)
-		{
-			labyrinth[currCell->x + 1][currCell->y]->priceCell = newPriceFromStart + newHeuristicResult;
-			labyrinth[currCell->x + 1][currCell->y]->priceFromStart = newPriceFromStart;
-			labyrinth[currCell->x + 1][currCell->y]->watch = true;
-			labyrinth[currCell->x + 1][currCell->y]->parent = currCell;
-			labyrinth[currCell->x + 1][currCell->y]->rect.setFillColor(sf::Color::Green);
-			openList.push_back(labyrinth[currCell->x + 1][currCell->y]);
-		}
-		else if (labyrinth[currCell->x + 1][currCell->y]->priceCell > newHeuristicResult + newPriceFromStart)
-		{
-			labyrinth[currCell->x + 1][currCell->y]->priceCell = newPriceFromStart + newHeuristicResult;
-		}			
-	}
+	EvaluationCell(labyrinth[x + 1][y], currCell, x + 1, y, points, openList);
 
 	std::sort(openList.begin(), openList.end(), [](auto a, auto b){
 		return (a->priceCell > b->priceCell);
