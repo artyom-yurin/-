@@ -5,9 +5,10 @@
 #include <math.h>
 #include <assert.h>
 
-Expression *ParseAtom(std::string &str);
-Expression *ParseMulDiv(std::string &str);
-Expression *ParseAddSub(std::string &str);
+Expression *ParseAtom(std::string &str, bool unarySign);
+Expression *ParseBracke(std::string &str, bool unarySign);
+Expression *ParseMulDiv(std::string &str, bool unarySign);
+Expression *ParseAddSub(std::string &str, bool unarySign);
 
 void SkipSpaces(std::string &expression)
 {
@@ -27,7 +28,6 @@ bool ParseDouble(std::string &expression, double &result)
 {
 	std::string remainingStr = expression;
 	SkipSpaces(remainingStr);
-
 	size_t numSize = 0;
 	if (remainingStr.size() > 0 && isdigit(remainingStr[0]))
 	{
@@ -38,6 +38,7 @@ bool ParseDouble(std::string &expression, double &result)
 		}
 		result = std::stod(remainingStr.substr(0, numSize));
 		expression = remainingStr.substr(numSize);
+
 		return true;
 	}
 
@@ -83,9 +84,9 @@ bool ParseOperator(std::string &expression, Operation &op)
 
 // Parses expressions like: `a`, `a+b±...`, `a-b±...`,
 //  where each sub-expression parsed by `ParseMulDiv`.
-Expression *ParseAddSub(std::string &str)
+Expression *ParseAddSub(std::string &str, bool unarySign)
 {
-	Expression *left = ParseMulDiv(str);
+	Expression *left = ParseMulDiv(str, unarySign);
 	while (true)
 	{
 		Operation op = Operation::NOP;
@@ -110,7 +111,7 @@ Expression *ParseAddSub(std::string &str)
 		Expression *right = nullptr;
 		try
 		{
-			right = ParseMulDiv(str);
+			right = ParseMulDiv(str, unarySign);
 		}
 		catch (...)
 		{
@@ -138,10 +139,10 @@ Expression *ParseAddSub(std::string &str)
 }
 
 // Parses expressions like: `a`, `a*b...`, `a/b...`, `a%b...`
-//  where each sub-expression parsed by `ParseAtom`.
-Expression *ParseMulDiv(std::string &str)
+//  where each sub-expression parsed by `ParseBracke`.
+Expression *ParseMulDiv(std::string &str, bool unarySign)
 {
-	Expression *left = ParseAtom(str);
+	Expression *left = ParseBracke(str, unarySign);
 	while (true)
 	{
 		Operation op = Operation::NOP;
@@ -167,7 +168,7 @@ Expression *ParseMulDiv(std::string &str)
 		Expression *right = nullptr;
 		try
 		{
-			right = ParseAtom(str);
+			right = ParseBracke(str, unarySign);
 		}
 		catch (...)
 		{
@@ -195,7 +196,7 @@ Expression *ParseMulDiv(std::string &str)
 }
 
 // Parses atom expression, like a number.
-Expression *ParseAtom(std::string &str)
+Expression *ParseAtom(std::string &str, bool unarySign)
 {
 	Expression *expr = new Expression;
 	if (!ParseDouble(str, expr->value))
@@ -203,13 +204,17 @@ Expression *ParseAtom(std::string &str)
 		DisposeExpression(expr);
 		throw std::invalid_argument("Expected number at: " + str);
 	}
+	if (unarySign)
+	{
+		expr->value = -expr->value;
+	}
 	return expr;
 }
 
 Expression *CreateExpression(const std::string &expression)
 {
 	std::string remainingStr = expression;
-	Expression *pExpr = ParseAddSub(remainingStr);
+	Expression *pExpr = ParseAddSub(remainingStr, false);
 
 	SkipSpaces(remainingStr); // just to ensure
 	if (!remainingStr.empty())
@@ -273,4 +278,48 @@ void DisposeExpression(Expression *pExpression)
 		}
 		delete pExpression;
 	}
+}
+
+Expression *ParseBracke(std::string &str, bool unarySign)
+{
+	std::string remainingStr = str;
+	SkipSpaces(remainingStr);
+	if (remainingStr[0] == '+')
+	{
+		remainingStr = remainingStr.substr(1);
+		SkipSpaces(remainingStr);
+	}
+	else if (remainingStr[0] == '-')
+	{
+		unarySign = !unarySign;
+		remainingStr = remainingStr.substr(1);
+		SkipSpaces(remainingStr);
+	}
+	str = remainingStr;
+	Expression *expr = nullptr;
+	try
+	{
+		if (remainingStr[0] == '(')
+		{
+			auto pos = remainingStr.find(')', 0);
+			if (pos == std::string::npos)
+			{
+				throw std::invalid_argument("No closing parenthesis");
+			}
+			std::string brackeStr = remainingStr.substr(1, pos - 1);
+			expr = ParseAddSub(brackeStr, unarySign);
+			remainingStr = remainingStr.substr(pos + 1);
+		}
+		else
+		{
+			expr = ParseAtom(remainingStr, unarySign);
+		}
+	}	
+	catch (...)
+	{
+		DisposeExpression(expr);
+		throw;
+	}
+	str = remainingStr;
+	return expr;
 }

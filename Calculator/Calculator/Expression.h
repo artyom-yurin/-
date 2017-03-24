@@ -9,15 +9,16 @@
 ///  @fn DisposeExpression - removes expression tree from memory.
 
 // BNF grammar for expression parsing:
-// expression ::= (add_sub_expr)
-//	   | add_sub_expr
+// expression ::= add_sub_expr
 // add_sub_expr ::= mul_div_expr '+' add_sub_expr
-//     | mul_div_expr '-' add_sub_expr
-//     | mul_div_expr
-// mul_div_expr ::= atom_expr '*' mul_div_expr
-//     | atom_expr '/' mul_div_expr
-//     | atom_expr '%' mul_div_expr
-//     | atom_expr
+//		| mul_div_expr '-' add_sub_expr
+//		| mul_div_expr
+// mul_div_expr ::= bracke_expr '*' mul_div_expr
+//		| bracke_expr '/' mul_div_expr
+//		| bracke_expr '%' mul_div_expr
+//		| bracke_expr
+// bracke_expr ::= +|- ( add_sub_expr )
+//		| atom_expr
 // atom_expr ::= +|-([0-9]+)
 
 
@@ -26,7 +27,7 @@ struct Expression;
 // Expression tree node operation code.
 enum class Operation
 {
-	NOP, // just a value
+	NOP, // just a values
 	ADD, // +
 	SUB, // -
 	MUL, // *
