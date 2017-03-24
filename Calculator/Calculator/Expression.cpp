@@ -280,6 +280,22 @@ void DisposeExpression(Expression *pExpression)
 	}
 }
 
+size_t FindCloseBracket(const std::string & str)
+{
+	auto result = str.find(')', 0);
+	if (result != std::string::npos)
+	{
+		auto openBracket = str.find('(', 1);
+		while (openBracket != std::string::npos && 
+			openBracket < result)
+		{
+			result = str.find(')', result + 1);
+			openBracket = str.find('(', openBracket + 1);
+		}
+	}
+	return result;
+}
+
 Expression *ParseBracke(std::string &str, bool unarySign)
 {
 	std::string remainingStr = str;
@@ -301,7 +317,7 @@ Expression *ParseBracke(std::string &str, bool unarySign)
 	{
 		if (remainingStr[0] == '(')
 		{
-			auto pos = remainingStr.find(')', 0);
+			auto pos = FindCloseBracket(remainingStr);
 			if (pos == std::string::npos)
 			{
 				throw std::invalid_argument("No closing parenthesis");

@@ -38,6 +38,6 @@ int main(int argc, char *argv[])
 	PrintExpressionResult(" 4 * 4 + 3 * 3 + 2 * 2 ");
 	PrintExpressionResult(" + 2 - - 2 - 4");
 	PrintExpressionResult("-(2 - 3) * 2");
-	/*PrintExpressionResult("(4 * 6 - 7) * 3 - 9 * (5 - (6 + 3))");*/
+	PrintExpressionResult("(4 * 6 - 7) * 3 - 9 * (5 - (6 + 3))");
 	return 0;
 }
