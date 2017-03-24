@@ -29,11 +29,16 @@ bool ParseDouble(std::string &expression, double &result)
 	std::string remainingStr = expression;
 	SkipSpaces(remainingStr);
 	size_t numSize = 0;
+	bool isPoint = false;
 	if (remainingStr.size() > 0 && isdigit(remainingStr[0]))
 	{
 		while (numSize < remainingStr.size()
-			&& isdigit(remainingStr[numSize]))
+			&& (isdigit(remainingStr[numSize]) || (remainingStr[numSize] == '.' && !isPoint)))
 		{
+			if (remainingStr[numSize] == '.')
+			{
+				isPoint = true;
+			}
 			++numSize;
 		}
 		result = std::stod(remainingStr.substr(0, numSize));

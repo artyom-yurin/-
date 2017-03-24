@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 {
 	(void)argc;
 	(void)argv;
-
+	PrintExpressionResult("1.2");
 	PrintExpressionResult("404");
 	PrintExpressionResult("   404  ");
 	PrintExpressionResult("3 * 3 * 3");
@@ -39,5 +39,7 @@ int main(int argc, char *argv[])
 	PrintExpressionResult(" + 2 - - 2 - 4");
 	PrintExpressionResult("-(2 - 3) * 2");
 	PrintExpressionResult("(4 * 6 - 7) * 3 - 9 * (5 - (6 + 3))");
+	PrintExpressionResult("(4.2 * 6 - 7.2) * 3.45 - 9.0005 * (5.1 - (6 + 3))");
+
 	return 0;
 }
