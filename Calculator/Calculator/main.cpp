@@ -145,7 +145,71 @@ struct Application
 
 	void Update()
 	{
-		std::string str = buttons[0].name.getString();
+		for (Button & button : buttons)
+		{
+			button.button.setFillColor(sf::Color::White);
+		}
+		auto position = sf::Mouse::getPosition(window);
+		int x = -2;
+		int y = -2;
+		int i = 0;
+		while (x == -2)
+		{
+			if (i == COUNT_BUTTON_HORIZONTAL)
+			{
+				x = -1;
+			}
+			else
+			{
+				if (SPACE_BETWEEN_BUTTONS + i * (BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS) <= position.x 
+					&& position.x <= (i + 1) * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
+				{
+					x = i;
+				}
+				++i;
+			}
+		}
+		i = 0;
+		while (y == -2)
+		{
+			if (i == COUNT_BUTTON_VERTICAL)
+			{
+				y = -1;
+			}
+			else
+			{
+				if (SCREEN_HEIGHT + 2 * SPACE_BETWEEN_BUTTONS + i * (BUTTON_HEIGHT + SPACE_BETWEEN_BUTTONS) <= position.y 
+					&& position.y <= SCREEN_HEIGHT + SPACE_BETWEEN_BUTTONS + (i + 1) * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
+				{
+					y = i;
+				}
+				++i;
+			}
+		}
+		
+		if (x == 4)
+		{
+			if ((SCREEN_HEIGHT + 3 * BUTTON_HEIGHT + 5 * SPACE_BETWEEN_BUTTONS) <= position.y
+				&& position.y <= (SCREEN_HEIGHT + 5 * BUTTON_HEIGHT + 6 * SPACE_BETWEEN_BUTTONS))
+			{
+				y = 3;
+			}
+		}
+
+		if (y == 4)
+		{
+			if (SPACE_BETWEEN_BUTTONS <= position.x
+				&& position.x <= 2 * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
+			{
+				x = 0;
+			}
+		}
+
+		if (x != -1 
+			&& y != -1)
+		{
+			buttons[x + COUNT_BUTTON_HORIZONTAL * y].button.setFillColor(sf::Color(255, 204, 102));
+		}
 	}
 
 	void Draw()
