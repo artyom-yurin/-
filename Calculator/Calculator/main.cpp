@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <string>
 #include "Expression.h"
 #include <SFML/Graphics.hpp>
@@ -45,34 +45,90 @@ void InitScreen(sf::RectangleShape & screen)
 	screen.setOutlineColor(sf::Color::Black);
 }
 
-void InitButtons(sf::RectangleShape (&buttons)[SIZE])
+struct Button
+{
+	sf::Text name;
+	sf::RectangleShape button;
+};
+
+void InitText(Button (&buttons)[SIZE])
+{
+	buttons[0].name.setString("C");
+	buttons[1].name.setString("CE");
+	buttons[2].name.setString(L"←");
+	buttons[3].name.setString("(");
+	buttons[4].name.setString(")");
+	buttons[5].name.setString("7");
+	buttons[6].name.setString("8");
+	buttons[7].name.setString("9");
+	buttons[8].name.setString("/");
+	buttons[9].name.setString("%");
+	buttons[10].name.setString("4");
+	buttons[11].name.setString("5");
+	buttons[12].name.setString("6");
+	buttons[13].name.setString("*");
+	buttons[14].name.setString("±");
+	buttons[15].name.setString("1");
+	buttons[16].name.setString("2");
+	buttons[17].name.setString("3");
+	buttons[18].name.setString("-");
+	buttons[19].name.setString("=");
+	buttons[20].name.setString("0");
+	buttons[22].name.setString(".");
+	buttons[23].name.setString("+");
+}
+
+void InitButtons(Button (&buttons)[SIZE], sf::Font & font)
 {
 	for (int i = 0; i < COUNT_BUTTON_HORIZONTAL; ++i)
 	{
 		for (int j = 0; j < COUNT_BUTTON_VERTICAL; ++j)
 		{
-			buttons[j * COUNT_BUTTON_HORIZONTAL + i].setSize({ BUTTON_WIDTH, BUTTON_HEIGHT });
-			buttons[j * COUNT_BUTTON_HORIZONTAL + i].setPosition(SPACE_BETWEEN_BUTTONS + i * (BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS), 2 * SPACE_BETWEEN_BUTTONS + SCREEN_HEIGHT + j * (BUTTON_HEIGHT + SPACE_BETWEEN_BUTTONS));
-			buttons[j * COUNT_BUTTON_HORIZONTAL + i].setOutlineThickness(1);
-			buttons[j * COUNT_BUTTON_HORIZONTAL + i].setOutlineColor(sf::Color::Black);
+			auto currButton = &buttons[j * COUNT_BUTTON_HORIZONTAL + i];
+			currButton->button.setSize({ BUTTON_WIDTH, BUTTON_HEIGHT });
+			currButton->button.setPosition(SPACE_BETWEEN_BUTTONS + i * (BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS), 2 * SPACE_BETWEEN_BUTTONS + SCREEN_HEIGHT + j * (BUTTON_HEIGHT + SPACE_BETWEEN_BUTTONS));
+			currButton->button.setOutlineThickness(1);
+			currButton->button.setOutlineColor(sf::Color::Black);
+
+			currButton->name.setCharacterSize(18);
+			currButton->name.setFont(font);
+			currButton->name.setFillColor(sf::Color::Black);
+			currButton->name.setOrigin(currButton->name.getGlobalBounds().width / 2, currButton->name.getGlobalBounds().height / 2);
+			currButton->name.setPosition(SPACE_BETWEEN_BUTTONS + i * (BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS) + BUTTON_WIDTH / 2, 2 * SPACE_BETWEEN_BUTTONS + SCREEN_HEIGHT + j * (BUTTON_HEIGHT + SPACE_BETWEEN_BUTTONS) + BUTTON_HEIGHT / 2 - SPACE_BETWEEN_BUTTONS / 2);
 		}
 	}
+	// arrow up
+	auto pos = buttons[2].name.getPosition();
+	pos -= {0, SPACE_BETWEEN_BUTTONS/2};
+	buttons[2].name.setPosition(pos);
 	// first big button
-	buttons[4] = sf::RectangleShape();
-	buttons[3].setSize({ 2 * BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS , BUTTON_HEIGHT });
+	buttons[21].button = sf::RectangleShape();
+	buttons[20].button.setSize({ 2 * BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS , BUTTON_HEIGHT });
+	buttons[20].name.setOrigin(buttons[20].name.getGlobalBounds().width / 2, buttons[20].name.getGlobalBounds().height / 2);
+	buttons[20].name.setPosition(1.5 * SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH, 2 * SPACE_BETWEEN_BUTTONS + SCREEN_HEIGHT + 4 * (BUTTON_HEIGHT + SPACE_BETWEEN_BUTTONS) + BUTTON_HEIGHT / 2 - SPACE_BETWEEN_BUTTONS / 2);
 	// second big button
-	buttons[21] = sf::RectangleShape();
-	buttons[20].setSize({ 2 * BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS , BUTTON_HEIGHT });
-	// third big button
-	buttons[19].setSize({BUTTON_WIDTH, 2 * BUTTON_HEIGHT + SPACE_BETWEEN_BUTTONS});
-	buttons[24] = sf::RectangleShape();
+	buttons[19].button.setSize({BUTTON_WIDTH, 2 * BUTTON_HEIGHT + SPACE_BETWEEN_BUTTONS});
+	buttons[24].button = sf::RectangleShape();
+	buttons[19].name.setOrigin(buttons[19].name.getGlobalBounds().width / 2, buttons[19].name.getGlobalBounds().height / 2);
+	buttons[19].name.setPosition(SPACE_BETWEEN_BUTTONS + 4 * (BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS) + BUTTON_WIDTH / 2, 2 * SPACE_BETWEEN_BUTTONS + SCREEN_HEIGHT + 3 * (BUTTON_HEIGHT + SPACE_BETWEEN_BUTTONS) + BUTTON_HEIGHT - SPACE_BETWEEN_BUTTONS / 2);
+}
+
+void InitFont(sf::Font & font)
+{
+	if (!font.loadFromFile("arial.ttf"))
+	{
+		std::cout << "Error not find file with font" << std::endl;
+		std::exit(1);
+	}
 }
 
 struct Application
 {
 	sf::RenderWindow window;
 	sf::RectangleShape screen;
-	sf::RectangleShape buttons[SIZE];
+	Button buttons[SIZE];
+	sf::Font font;
+
 	void InitWindow()
 	{
 		sf::ContextSettings settings;
@@ -82,16 +138,26 @@ struct Application
 	void InitApplication()
 	{
 		InitScreen(screen);
-		InitButtons(buttons);
+		InitFont(font);
+		InitText(buttons);
+		InitButtons(buttons, font);
 	}
+
+	void Update()
+	{
+		std::string str = buttons[0].name.getString();
+	}
+
 	void Draw()
 	{
 		window.draw(screen);
-		for (sf::RectangleShape button : buttons)
+		for (Button & button : buttons)
 		{
-			window.draw(button);
+			window.draw(button.button);
+			window.draw(button.name);
 		}
 	}
+
 	void HandleEvents()
 	{
 		sf::Event event;
@@ -115,6 +181,8 @@ int main(int argc, char *argv[])
 	while (app.window.isOpen())
 	{
 		app.HandleEvents();
+
+		app.Update();
 
 		app.window.clear(sf::Color::White);
 
