@@ -122,18 +122,29 @@ void InitFont(sf::Font & font)
 	}
 }
 
+void InitTextExpression(sf::Text & textExpression, const sf::Font & font)
+{
+	textExpression.setCharacterSize(14);
+	textExpression.setFont(font);
+	textExpression.setFillColor(sf::Color::Black);
+}
+
 struct Application
 {
 	sf::RenderWindow window;
 	sf::RectangleShape screen;
 	Button buttons[SIZE];
 	sf::Font font;
+	sf::Text textExpression;
+	std::string expression;
+	bool isMousePressed = false;
 
 	void InitWindow()
 	{
 		sf::ContextSettings settings;
 		settings.antialiasingLevel = 8;
 		window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Calculator", sf::Style::Close, settings);
+		window.setKeyRepeatEnabled(false);
 	}
 	void InitApplication()
 	{
@@ -141,80 +152,127 @@ struct Application
 		InitFont(font);
 		InitText(buttons);
 		InitButtons(buttons, font);
+		InitTextExpression(textExpression, font);
 	}
 
 	void Update()
 	{
-		for (Button & button : buttons)
+		if (!isMousePressed)
 		{
-			button.button.setFillColor(sf::Color::White);
-		}
-		auto position = sf::Mouse::getPosition(window);
-		int x = -2;
-		int y = -2;
-		int i = 0;
-		while (x == -2)
-		{
-			if (i == COUNT_BUTTON_HORIZONTAL)
+			for (Button & button : buttons)
 			{
-				x = -1;
+				button.button.setFillColor(sf::Color::White);
 			}
-			else
+			auto position = sf::Mouse::getPosition(window);
+			int x = -2;
+			int y = -2;
+			int i = 0;
+			while (x == -2)
 			{
-				if (SPACE_BETWEEN_BUTTONS + i * (BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS) <= position.x 
-					&& position.x <= (i + 1) * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
+				if (i == COUNT_BUTTON_HORIZONTAL)
 				{
-					x = i;
+					x = -1;
 				}
-				++i;
-			}
-		}
-		i = 0;
-		while (y == -2)
-		{
-			if (i == COUNT_BUTTON_VERTICAL)
-			{
-				y = -1;
-			}
-			else
-			{
-				if (SCREEN_HEIGHT + 2 * SPACE_BETWEEN_BUTTONS + i * (BUTTON_HEIGHT + SPACE_BETWEEN_BUTTONS) <= position.y 
-					&& position.y <= SCREEN_HEIGHT + SPACE_BETWEEN_BUTTONS + (i + 1) * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
+				else
 				{
-					y = i;
+					if (SPACE_BETWEEN_BUTTONS + i * (BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS) <= position.x
+						&& position.x <= (i + 1) * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
+					{
+						x = i;
+					}
+					++i;
 				}
-				++i;
 			}
-		}
-		
-		if (x == 4)
-		{
-			if ((SCREEN_HEIGHT + 3 * BUTTON_HEIGHT + 5 * SPACE_BETWEEN_BUTTONS) <= position.y
-				&& position.y <= (SCREEN_HEIGHT + 5 * BUTTON_HEIGHT + 6 * SPACE_BETWEEN_BUTTONS))
+			i = 0;
+			while (y == -2)
 			{
-				y = 3;
+				if (i == COUNT_BUTTON_VERTICAL)
+				{
+					y = -1;
+				}
+				else
+				{
+					if (SCREEN_HEIGHT + 2 * SPACE_BETWEEN_BUTTONS + i * (BUTTON_HEIGHT + SPACE_BETWEEN_BUTTONS) <= position.y
+						&& position.y <= SCREEN_HEIGHT + SPACE_BETWEEN_BUTTONS + (i + 1) * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
+					{
+						y = i;
+					}
+					++i;
+				}
 			}
-		}
 
-		if (y == 4)
-		{
-			if (SPACE_BETWEEN_BUTTONS <= position.x
-				&& position.x <= 2 * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
+			if (x == 4)
 			{
-				x = 0;
+				if ((SCREEN_HEIGHT + 3 * BUTTON_HEIGHT + 5 * SPACE_BETWEEN_BUTTONS) <= position.y
+					&& position.y <= (SCREEN_HEIGHT + 5 * BUTTON_HEIGHT + 6 * SPACE_BETWEEN_BUTTONS))
+				{
+					y = 3;
+				}
+			}
+
+			if (y == 4)
+			{
+				if (SPACE_BETWEEN_BUTTONS <= position.x
+					&& position.x <= 2 * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
+				{
+					x = 0;
+				}
+			}
+
+			if (x != -1
+				&& y != -1)
+			{
+				int index = x + COUNT_BUTTON_HORIZONTAL * y;
+				auto currButton = &buttons[index];
+				currButton->button.setFillColor(sf::Color(255, 204, 102));
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+				{
+					switch (index)
+					{
+						case 0:
+						{
+							break;
+						}
+						case 1:
+						{
+							break;
+						}
+						case 2:
+						{
+							break;
+						}
+						case 14:
+						{
+							break;
+						}
+						case 19:
+						{
+							break;
+						}
+						default:
+						{
+							expression += currButton->name.getString();
+							break;
+						}
+					}
+
+					textExpression.setString(expression);
+					textExpression.setOrigin(textExpression.getGlobalBounds().width, textExpression.getGlobalBounds().height / 2);
+					textExpression.setPosition(0.5 * SPACE_BETWEEN_BUTTONS + SCREEN_WIDTH, SPACE_BETWEEN_BUTTONS + SCREEN_HEIGHT / 2);
+					isMousePressed = true;
+				}
 			}
 		}
-
-		if (x != -1 
-			&& y != -1)
+		else
 		{
-			buttons[x + COUNT_BUTTON_HORIZONTAL * y].button.setFillColor(sf::Color(255, 204, 102));
+			isMousePressed = sf::Mouse::isButtonPressed(sf::Mouse::Left);
 		}
 	}
 
 	void Draw()
 	{
 		window.draw(screen);
+		window.draw(textExpression);
 		for (Button & button : buttons)
 		{
 			window.draw(button.button);
