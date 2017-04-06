@@ -241,12 +241,31 @@ struct Application
 						}
 						case 1:
 						{
-							//TODO: delete before checkpoint char
+							while ((!expression.empty()) && expression[expression.length() - 1] == ' ')
+							{
+								expression.pop_back();
+							}
+							while ((!expression.empty()) && (expression[expression.length() - 1] != ' '))
+							{
+								expression.pop_back();
+							}
+							if (!expression.empty())
+							{
+								expression.pop_back();
+							}
 							break;
 						}
 						case 2:
 						{
+							while ((!expression.empty()) && expression[expression.length() - 1] == ' ')
+							{
+								expression.pop_back();
+							}
 							if (!expression.empty())
+							{
+								expression.pop_back();
+							}
+							while ((!expression.empty()) && expression[expression.length() - 1] == ' ')
 							{
 								expression.pop_back();
 							}
@@ -273,7 +292,25 @@ struct Application
 						{
 							if (textExpression.getGlobalBounds().width < SCREEN_WIDTH - SPACE_BETWEEN_BUTTONS)
 							{
-								expression += currButton->name.getString();
+								char ch = (char)currButton->name.getString()[0];
+								switch (ch)
+								{
+								case '+':
+								case '-':
+								case '/':
+								case '*':
+								case ')':
+								case '(':
+								{
+									expression += " ";
+									expression += ch;
+									expression += " ";
+									break;
+								}
+								default:
+									expression += ch;
+									break;
+								}
 							}
 							break;
 						}
