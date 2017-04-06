@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include <string>
+#include <sstream>
 #include "Expression.h"
 #include <SFML/Graphics.hpp>
 
@@ -23,16 +24,20 @@ double Calculate(const std::string &expression)
 	return result;
 }
 
-void PrintExpressionResult(const std::string &expression)
+std::string PrintExpressionResult(const std::string &expression)
 {
 	try
 	{
 		const double result = Calculate(expression);
 		std::cout << "'" << expression << "' = " << result << std::endl;
+		std::ostringstream output;
+		output << result;
+		return output.str();
 	}
 	catch (const std::exception &ex)
 	{
 		std::cerr << "Error in '" << expression << "': " << ex.what() << std::endl;
+		return "";
 	}
 }
 
@@ -231,27 +236,45 @@ struct Application
 					{
 						case 0:
 						{
+							expression = "";
 							break;
 						}
 						case 1:
 						{
+							//TODO: delete before checkpoint char
 							break;
 						}
 						case 2:
 						{
+							if (!expression.empty())
+							{
+								expression.pop_back();
+							}
 							break;
 						}
 						case 14:
 						{
+							//TODO: negative value
+							if (textExpression.getGlobalBounds().width < SCREEN_WIDTH - SPACE_BETWEEN_BUTTONS)
+							{
+								expression += '-';
+							}
 							break;
 						}
 						case 19:
 						{
+							if (!expression.empty())
+							{
+								expression = PrintExpressionResult(expression);
+							}
 							break;
 						}
 						default:
 						{
-							expression += currButton->name.getString();
+							if (textExpression.getGlobalBounds().width < SCREEN_WIDTH - SPACE_BETWEEN_BUTTONS)
+							{
+								expression += currButton->name.getString();
+							}
 							break;
 						}
 					}
