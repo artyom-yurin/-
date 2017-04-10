@@ -17,9 +17,18 @@ const int SIZE = COUNT_BUTTON_HORIZONTAL * COUNT_BUTTON_VERTICAL;
 
 double Calculate(const std::string &expression)
 {
-	Expression *pExpression = CreateExpression(expression);
-	const double result = CalculateExpression(pExpression);
-	DisposeExpression(pExpression);
+	double result = 0;
+	if (expression.find("inf") == std::string::npos)
+	{
+		Expression *pExpression = CreateExpression(expression);
+		result = CalculateExpression(pExpression);
+		DisposeExpression(pExpression);
+	}
+	else
+	{
+		result = INFINITY;
+	}
+
 
 	return result;
 }
@@ -47,7 +56,7 @@ void InitScreen(sf::RectangleShape & screen)
 	screen.setPosition(SPACE_BETWEEN_BUTTONS,SPACE_BETWEEN_BUTTONS);
 	screen.setFillColor(sf::Color::White);
 	screen.setOutlineThickness(1);
-	screen.setOutlineColor(sf::Color::Black);
+	screen.setOutlineColor(sf::Color(218, 218, 218, 255));
 }
 
 struct Button
@@ -93,19 +102,27 @@ void InitButtons(Button (&buttons)[SIZE], sf::Font & font)
 			currButton->button.setSize({ BUTTON_WIDTH, BUTTON_HEIGHT });
 			currButton->button.setPosition(SPACE_BETWEEN_BUTTONS + i * (BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS), 2 * SPACE_BETWEEN_BUTTONS + SCREEN_HEIGHT + j * (BUTTON_HEIGHT + SPACE_BETWEEN_BUTTONS));
 			currButton->button.setOutlineThickness(1);
-			currButton->button.setOutlineColor(sf::Color::Black);
+			currButton->button.setOutlineColor(sf::Color(218, 218, 218, 255));
 
 			currButton->name.setCharacterSize(18);
 			currButton->name.setFont(font);
-			currButton->name.setFillColor(sf::Color::Black);
+			currButton->name.setFillColor(sf::Color(77, 77, 77, 255));
 			currButton->name.setOrigin(currButton->name.getGlobalBounds().width / 2, currButton->name.getGlobalBounds().height / 2);
 			currButton->name.setPosition(SPACE_BETWEEN_BUTTONS + i * (BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS) + BUTTON_WIDTH / 2, 2 * SPACE_BETWEEN_BUTTONS + SCREEN_HEIGHT + j * (BUTTON_HEIGHT + SPACE_BETWEEN_BUTTONS) + BUTTON_HEIGHT / 2 - SPACE_BETWEEN_BUTTONS / 2);
 		}
 	}
+	buttons[8].name.setFillColor(sf::Color(239, 130, 13, 255));
+	buttons[13].name.setFillColor(sf::Color(239, 130, 13, 255));
+	buttons[18].name.setFillColor(sf::Color(239, 130, 13, 255));
+	buttons[23].name.setFillColor(sf::Color(239, 130, 13, 255));
+	buttons[19].name.setFillColor(sf::Color::White);
 	// arrow up
 	auto pos = buttons[2].name.getPosition();
 	pos -= {0, SPACE_BETWEEN_BUTTONS/2};
 	buttons[2].name.setPosition(pos);
+	pos = buttons[18].name.getPosition();
+	pos -= {0, SPACE_BETWEEN_BUTTONS/2};
+	buttons[18].name.setPosition(pos);
 	// first big button
 	buttons[21].button = sf::RectangleShape();
 	buttons[20].button.setSize({ 2 * BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS , BUTTON_HEIGHT });
@@ -131,7 +148,7 @@ void InitTextExpression(sf::Text & textExpression, const sf::Font & font)
 {
 	textExpression.setCharacterSize(14);
 	textExpression.setFont(font);
-	textExpression.setFillColor(sf::Color::Black);
+	textExpression.setFillColor(sf::Color(239, 130, 13, 255));
 }
 
 struct Application
@@ -168,6 +185,7 @@ struct Application
 			{
 				button.button.setFillColor(sf::Color::White);
 			}
+			buttons[19].button.setFillColor(sf::Color(239, 105, 8, 255));
 			auto position = sf::Mouse::getPosition(window);
 			int x = -2;
 			int y = -2;
@@ -229,7 +247,11 @@ struct Application
 			{
 				int index = x + COUNT_BUTTON_HORIZONTAL * y;
 				auto currButton = &buttons[index];
-				currButton->button.setFillColor(sf::Color(255, 204, 102));
+				currButton->button.setFillColor(sf::Color(179, 179, 179, 255));
+				if (index == 19)
+				{
+					currButton->button.setFillColor(sf::Color(168, 91, 9, 255));
+				}
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 				{
 					switch (index)
@@ -241,15 +263,9 @@ struct Application
 						}
 						case 1:
 						{
-							while ((!expression.empty()) && expression[expression.length() - 1] == ' ')
-							{
-								expression.pop_back();
-							}
-							while ((!expression.empty()) && (expression[expression.length() - 1] != ' '))
-							{
-								expression.pop_back();
-							}
-							if (!expression.empty())
+							while (!expression.empty() && 
+								(isdigit(expression[expression.length() - 1]) ||
+									expression[expression.length() - 1] == '.'))
 							{
 								expression.pop_back();
 							}
@@ -257,15 +273,7 @@ struct Application
 						}
 						case 2:
 						{
-							while ((!expression.empty()) && expression[expression.length() - 1] == ' ')
-							{
-								expression.pop_back();
-							}
 							if (!expression.empty())
-							{
-								expression.pop_back();
-							}
-							while ((!expression.empty()) && expression[expression.length() - 1] == ' ')
 							{
 								expression.pop_back();
 							}
@@ -292,25 +300,7 @@ struct Application
 						{
 							if (textExpression.getGlobalBounds().width < SCREEN_WIDTH - SPACE_BETWEEN_BUTTONS)
 							{
-								char ch = (char)currButton->name.getString()[0];
-								switch (ch)
-								{
-								case '+':
-								case '-':
-								case '/':
-								case '*':
-								case ')':
-								case '(':
-								{
-									expression += " ";
-									expression += ch;
-									expression += " ";
-									break;
-								}
-								default:
-									expression += ch;
-									break;
-								}
+								expression += currButton->name.getString();
 							}
 							break;
 						}
