@@ -160,6 +160,7 @@ struct Application
 	sf::Text textExpression;
 	std::string expression;
 	bool isMousePressed = false;
+	int countBrack = 0;
 
 	void InitWindow()
 	{
@@ -275,7 +276,16 @@ struct Application
 						{
 							if (!expression.empty())
 							{
+								char sym = expression[expression.length() - 1];
 								expression.pop_back();
+								if (sym == '(')
+								{
+									countBrack--;
+								}
+								else if (sym == ')')
+								{
+									countBrack++;
+								}
 							}
 							break;
 						}
@@ -292,6 +302,11 @@ struct Application
 						{
 							if (!expression.empty())
 							{
+								while (countBrack)
+								{
+									expression += ")";
+									countBrack--;
+								}
 								expression = PrintExpressionResult(expression);
 							}
 							break;
@@ -300,7 +315,19 @@ struct Application
 						{
 							if (textExpression.getGlobalBounds().width < SCREEN_WIDTH - SPACE_BETWEEN_BUTTONS)
 							{
-								expression += currButton->name.getString();
+								std::string sym = currButton->name.getString();
+								expression += sym;
+								if (sym == "(")
+								{
+									countBrack++;
+								}
+								else if (sym == ")")
+								{
+									if (countBrack > 0)
+									{
+										countBrack--;
+									}
+								}
 							}
 							break;
 						}
