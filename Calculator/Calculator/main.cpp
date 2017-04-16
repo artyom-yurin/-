@@ -151,6 +151,33 @@ void InitTextExpression(sf::Text & textExpression, const sf::Font & font)
 	textExpression.setFillColor(sf::Color(239, 130, 13, 255));
 }
 
+void DeleteUnarySign(std::string & expression)
+{
+	if (!expression.empty())
+	{
+		if (expression[expression.length() - 1] == '+'
+			|| expression[expression.length() - 1] == '-')
+		{
+			if (expression.length() == 1
+				|| expression[expression.length() - 2] == '+'
+				|| expression[expression.length() - 2] == '-'
+				|| expression[expression.length() - 2] == '*'
+				|| expression[expression.length() - 2] == '/'
+				|| expression[expression.length() - 2] == '%')
+			{
+				expression.pop_back();
+			}
+		}
+	}
+}
+
+void InsertUnarySign(std::string & expression, int it)
+{
+	auto iter = expression.begin();
+	for (int i = 0; i < it; i++, iter++);
+	expression.insert(iter, '-');
+}
+
 struct Application
 {
 	sf::RenderWindow window;
@@ -270,6 +297,7 @@ struct Application
 							{
 								expression.pop_back();
 							}
+							DeleteUnarySign(expression);
 							break;
 						}
 						case 2:
@@ -278,6 +306,7 @@ struct Application
 							{
 								char sym = expression[expression.length() - 1];
 								expression.pop_back();
+								DeleteUnarySign(expression);
 								if (sym == '(')
 								{
 									countBrack--;
@@ -291,10 +320,75 @@ struct Application
 						}
 						case 14:
 						{
-							//TODO: negative value
-							if (textExpression.getGlobalBounds().width < SCREEN_WIDTH - SPACE_BETWEEN_BUTTONS)
+							int k = expression.length() - 1;
+							while (k > 0 &&
+								(isdigit(expression[k]) ||
+									expression[k] == '.'))
 							{
-								expression += '-';
+								k--;
+							}
+							if (expression[k] == ')')
+							{
+								int closeBracker = 1;
+								while (closeBracker)
+								{
+									k--;
+									if (expression[k] == ')')
+									{
+										closeBracker++;
+									}
+									else if (expression[k] == '(')
+									{
+										closeBracker--;
+									}
+								}
+								k--;
+							}
+							if (expression[k] == '+')
+							{
+								if (k == 0
+									|| expression[k - 1] == '+'
+									|| expression[k - 1] == '-'
+									|| expression[k - 1] == '*'
+									|| expression[k - 1] == '/'
+									|| expression[k - 1] == '%'
+									|| expression[k - 1] == '(')
+								{
+									expression[k] = '-';
+								}
+								else
+								{
+									InsertUnarySign(expression, k + 1);
+								}
+
+							}
+							else if (expression[k] == '-')
+							{
+								if (k == 0
+									|| expression[k - 1] == '+'
+									|| expression[k - 1] == '-'
+									|| expression[k - 1] == '*'
+									|| expression[k - 1] == '/'
+									|| expression[k - 1] == '%'
+									|| expression[k - 1] == '(')
+								{
+									expression[k] = '+';
+								}
+								else
+								{
+									InsertUnarySign(expression, k + 1);
+								}
+							}
+							else
+							{
+								if (expression[k] == '*'
+									|| expression[k] == '/'
+									|| expression[k] == '%'
+									|| expression[k] == '(')
+								{
+									k++;
+								}
+								InsertUnarySign(expression, k);
 							}
 							break;
 						}
