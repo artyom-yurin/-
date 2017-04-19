@@ -178,6 +178,18 @@ void InsertUnarySign(std::string & expression, int it)
 	expression.insert(iter, '-');
 }
 
+struct Parser
+{
+	bool canNumber = true;
+	bool canPoint = false;
+	bool canOpenBracke = true;
+	bool canCloseBracke = false;
+	bool canNigativeValue = false;
+	bool canSign = false;
+	bool canCount = false;
+	bool firstNumber = false;
+};
+
 struct Application
 {
 	sf::RenderWindow window;
@@ -188,6 +200,7 @@ struct Application
 	std::string expression;
 	bool isMousePressed = false;
 	int countBrack = 0;
+	Parser parser;
 
 	void InitWindow()
 	{
@@ -287,6 +300,14 @@ struct Application
 						case 0:
 						{
 							expression = "";
+							parser.canNumber = true;
+							parser.canPoint = false;
+							parser.canOpenBracke = true;
+							parser.canCloseBracke = false;
+							parser.canNigativeValue = false;
+							parser.canSign = false;
+							parser.canCount = false;
+							parser.firstNumber = false;
 							break;
 						}
 						case 1:
@@ -297,6 +318,14 @@ struct Application
 							{
 								expression.pop_back();
 							}
+							parser.canNumber = true;
+							parser.canOpenBracke = true;
+							parser.firstNumber = false;
+							parser.canPoint = false;
+							parser.canSign = false;
+							parser.canCloseBracke = false;
+							parser.canCount = false;
+							parser.canNigativeValue = false;
 							DeleteUnarySign(expression);
 							break;
 						}
@@ -315,86 +344,119 @@ struct Application
 								{
 									countBrack++;
 								}
+								else if (sym == '.')
+								{
+									parser.canPoint = true;
+								}
+								else if (sym == '+'
+									|| sym == '-'
+									|| sym == '*'
+									|| sym == '/'
+									|| sym == '%')
+								{
+									parser.canSign = true;
+									parser.canCount = true;
+								}
+								else if (expression.empty() 
+									|| expression[expression.length() - 1] == '+'
+									|| expression[expression.length() - 1] == '-'
+									|| expression[expression.length() - 1] == '*'
+									|| expression[expression.length() - 1] == '/'
+									|| expression[expression.length() - 1] == '%'
+									|| expression[expression.length() - 1] == '(')
+								{
+									parser.canNumber = true;
+									parser.canPoint = false;
+									parser.canOpenBracke = true;
+									parser.canCloseBracke = (expression[expression.length() - 1] == '(');
+									parser.canNigativeValue = false;
+									parser.canSign = false;
+									parser.canCount = false;
+									parser.firstNumber = false;
+								}
 							}
 							break;
 						}
 						case 14:
 						{
-							int k = expression.length() - 1;
-							while (k > 0 &&
-								(isdigit(expression[k]) ||
-									expression[k] == '.'))
+							if (parser.canNigativeValue)
 							{
-								k--;
-							}
-							if (expression[k] == ')')
-							{
-								int closeBracker = 1;
-								while (closeBracker)
+								int k = expression.length() - 1;
+								while (k > 0 &&
+									(isdigit(expression[k]) ||
+										expression[k] == '.'))
 								{
 									k--;
-									if (expression[k] == ')')
-									{
-										closeBracker++;
-									}
-									else if (expression[k] == '(')
-									{
-										closeBracker--;
-									}
 								}
-								k--;
-							}
-							if (expression[k] == '+')
-							{
-								if (k == 0
-									|| expression[k - 1] == '+'
-									|| expression[k - 1] == '-'
-									|| expression[k - 1] == '*'
-									|| expression[k - 1] == '/'
-									|| expression[k - 1] == '%'
-									|| expression[k - 1] == '(')
+								if (expression[k] == ')')
 								{
-									expression[k] = '-';
+									int closeBracker = 1;
+									while (closeBracker)
+									{
+										k--;
+										if (expression[k] == ')')
+										{
+											closeBracker++;
+										}
+										else if (expression[k] == '(')
+										{
+											closeBracker--;
+										}
+									}
+									k--;
 								}
-								else
+								if (expression[k] == '+')
 								{
-									InsertUnarySign(expression, k + 1);
-								}
+									if (k == 0
+										|| expression[k - 1] == '+'
+										|| expression[k - 1] == '-'
+										|| expression[k - 1] == '*'
+										|| expression[k - 1] == '/'
+										|| expression[k - 1] == '%'
+										|| expression[k - 1] == '(')
+									{
+										expression[k] = '-';
+									}
+									else
+									{
+										InsertUnarySign(expression, k + 1);
+									}
 
-							}
-							else if (expression[k] == '-')
-							{
-								if (k == 0
-									|| expression[k - 1] == '+'
-									|| expression[k - 1] == '-'
-									|| expression[k - 1] == '*'
-									|| expression[k - 1] == '/'
-									|| expression[k - 1] == '%'
-									|| expression[k - 1] == '(')
-								{
-									expression[k] = '+';
 								}
-								else
+								else if (expression[k] == '-')
 								{
-									InsertUnarySign(expression, k + 1);
+									if (k == 0
+										|| expression[k - 1] == '+'
+										|| expression[k - 1] == '-'
+										|| expression[k - 1] == '*'
+										|| expression[k - 1] == '/'
+										|| expression[k - 1] == '%'
+										|| expression[k - 1] == '(')
+									{
+										expression[k] = '+';
+									}
+									else
+									{
+										InsertUnarySign(expression, k + 1);
+									}
 								}
-							}
-							else
-							{
-								if (expression[k] == '*'
-									|| expression[k] == '/'
-									|| expression[k] == '%'
-									|| expression[k] == '(')
+								else if (expression[k] != 'f')
 								{
-									k++;
+									if (expression[k] == '*'
+										|| expression[k] == '/'
+										|| expression[k] == '%'
+										|| expression[k] == '(')
+									{
+										k++;
+									}
+									InsertUnarySign(expression, k);
 								}
-								InsertUnarySign(expression, k);
 							}
 							break;
 						}
 						case 19:
 						{
-							if (!expression.empty())
+							if (!expression.empty() && parser.canCount)
 							{
 								while (countBrack)
 								{
@@ -402,6 +464,13 @@ struct Application
 									countBrack--;
 								}
 								expression = PrintExpressionResult(expression);
+								parser.canCloseBracke = true;
+								parser.canSign = true;
+								parser.canNigativeValue = true;
+								parser.canCount = true;
+								parser.canPoint = false;
+								parser.canNumber = false;
+								parser.canOpenBracke = false;
 							}
 							break;
 						}
@@ -410,18 +479,96 @@ struct Application
 							if (textExpression.getGlobalBounds().width < SCREEN_WIDTH - SPACE_BETWEEN_BUTTONS)
 							{
 								std::string sym = currButton->name.getString();
-								expression += sym;
-								if (sym == "(")
+								if ("0" <= sym && sym <= "9")
 								{
-									countBrack++;
+									if (!parser.canNumber)
+									{
+										sym = "";
+									}
+									else
+									{
+										parser.canCloseBracke = true;
+										parser.canSign = true;
+										parser.canNigativeValue = true;
+										parser.canCount = true;
+										parser.canOpenBracke = false;
+										if (!parser.firstNumber)
+										{
+											parser.firstNumber = true;
+											parser.canPoint = true;
+										}
+									}
+								}
+								else if (sym == "+"
+									|| sym == "-"
+									|| sym == "*"
+									|| sym == "/"
+									|| sym == "%")
+								{
+									if (!parser.canSign)
+									{
+										sym = "";
+									}
+									else
+									{
+										parser.canNumber = true;
+										parser.canOpenBracke = true;
+										parser.firstNumber = false;
+										parser.canPoint = false;
+										parser.canSign = false;
+										parser.canCloseBracke = false;
+										parser.canCount = false;
+										parser.canNigativeValue = false;
+									}
+								}
+								else if (sym == ".")
+								{
+									if (!parser.canPoint)
+									{
+										sym = "";
+									}
+									else
+									{
+										parser.canPoint = false;
+										parser.canSign = false;
+										parser.canCount = false;
+									}
+								}
+								else if (sym == "(")
+								{
+									if (parser.canOpenBracke)
+									{
+										countBrack++;
+									}
+									else
+									{
+										sym = "";
+									}
 								}
 								else if (sym == ")")
 								{
-									if (countBrack > 0)
+									if (parser.canCloseBracke)
 									{
-										countBrack--;
+										if (countBrack > 0)
+										{
+											countBrack--;
+											parser.canSign = true;
+										}
+										else
+										{
+											sym = "";
+										}
+										if (countBrack == 0)
+										{
+											parser.canCloseBracke = false;
+										}
+									}
+									else
+									{
+										sym = "";
 									}
 								}
+								expression += sym;
 							}
 							break;
 						}
@@ -483,18 +630,6 @@ int main(int argc, char *argv[])
 
 		app.window.display();
 	}
-	PrintExpressionResult("1.2");
-	PrintExpressionResult("404");
-	PrintExpressionResult("   404  ");
-	PrintExpressionResult("3 * 3 * 3");
-	PrintExpressionResult("12 / 12 / 12");
-	PrintExpressionResult("25 + 17 / 45 / 2");
-	PrintExpressionResult("42 + 42 / 2 * 2");
-	PrintExpressionResult(" 4 * 4 + 3 * 3 + 2 * 2 ");
-	PrintExpressionResult(" + 2 - - 2 - 4");
-	PrintExpressionResult("-(2 - 3) * 2");
-	PrintExpressionResult("(4 * 6 - 7) * 3 - 9 * (5 - (6 + 3))");
-	PrintExpressionResult("(4.2 * 6 - 7.2) * 3.45 - 9.0005 * (5.1 - (6 + 3))");
 
 	return 0;
 }
