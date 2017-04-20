@@ -14,6 +14,8 @@ const float SPACE_BETWEEN_BUTTONS = 10;
 const int COUNT_BUTTON_HORIZONTAL = 5;
 const int COUNT_BUTTON_VERTICAL = 5;
 const int SIZE = COUNT_BUTTON_HORIZONTAL * COUNT_BUTTON_VERTICAL;
+const int NOT_FOUND = -2;
+const int ANY_BUTTONS = -1;
 
 double Calculate(const std::string &expression)
 {
@@ -289,6 +291,88 @@ void ParseSymbol(std::string & symbol, Parser & parser, int & countBrack)
 	}
 }
 
+int DeterminationButtonIndex(const sf::Vector2i & mousePosition)
+{
+	sf::Vector2i position = mousePosition;
+	int x = NOT_FOUND;
+	int y = NOT_FOUND;
+	int i = 0;
+	while (x == NOT_FOUND)
+	{
+		if (i == COUNT_BUTTON_HORIZONTAL)
+		{
+			x = ANY_BUTTONS;
+		}
+		else
+		{
+			if (SPACE_BETWEEN_BUTTONS + i * (BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS) <= position.x
+				&& position.x <= (i + 1) * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
+			{
+				x = i;
+			}
+			++i;
+		}
+	}
+	i = 0;
+	while (y == NOT_FOUND)
+	{
+		if (i == COUNT_BUTTON_VERTICAL)
+		{
+			y = ANY_BUTTONS;
+		}
+		else
+		{
+			if (SCREEN_HEIGHT + 2 * SPACE_BETWEEN_BUTTONS + i * (BUTTON_HEIGHT + SPACE_BETWEEN_BUTTONS) <= position.y
+				&& position.y <= SCREEN_HEIGHT + SPACE_BETWEEN_BUTTONS + (i + 1) * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
+			{
+				y = i;
+			}
+			++i;
+		}
+	}
+
+	if (x == 4)
+	{
+		if ((SCREEN_HEIGHT + 3 * BUTTON_HEIGHT + COUNT_BUTTON_VERTICAL * SPACE_BETWEEN_BUTTONS) <= position.y
+			&& position.y <= (SCREEN_HEIGHT + COUNT_BUTTON_VERTICAL * BUTTON_HEIGHT + (COUNT_BUTTON_VERTICAL + 1) * SPACE_BETWEEN_BUTTONS))
+		{
+			y = 3;
+		}
+	}
+
+	if (y == 4)
+	{
+		if (SPACE_BETWEEN_BUTTONS <= position.x
+			&& position.x <= 2 * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
+		{
+			x = 0;
+		}
+	}
+
+	int index;
+
+	if (x == ANY_BUTTONS || 
+		y == ANY_BUTTONS)
+	{
+		index = ANY_BUTTONS;
+	}
+	else
+	{
+		index = x + COUNT_BUTTON_HORIZONTAL * y;
+	}
+
+	return index;
+}
+
+void ReturnDefaultColors(Button(&buttons)[SIZE])
+{
+	for (Button & button : buttons)
+	{
+		button.button.setFillColor(sf::Color::White);
+	}
+	buttons[19].button.setFillColor(sf::Color(239, 105, 8, 255));
+}
+
 struct Application
 {
 	sf::RenderWindow window;
@@ -321,71 +405,12 @@ struct Application
 	{
 		if (!isMousePressed)
 		{
-			for (Button & button : buttons)
-			{
-				button.button.setFillColor(sf::Color::White);
-			}
-			buttons[19].button.setFillColor(sf::Color(239, 105, 8, 255));
-			auto position = sf::Mouse::getPosition(window);
-			int x = -2;
-			int y = -2;
-			int i = 0;
-			while (x == -2)
-			{
-				if (i == COUNT_BUTTON_HORIZONTAL)
-				{
-					x = -1;
-				}
-				else
-				{
-					if (SPACE_BETWEEN_BUTTONS + i * (BUTTON_WIDTH + SPACE_BETWEEN_BUTTONS) <= position.x
-						&& position.x <= (i + 1) * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
-					{
-						x = i;
-					}
-					++i;
-				}
-			}
-			i = 0;
-			while (y == -2)
-			{
-				if (i == COUNT_BUTTON_VERTICAL)
-				{
-					y = -1;
-				}
-				else
-				{
-					if (SCREEN_HEIGHT + 2 * SPACE_BETWEEN_BUTTONS + i * (BUTTON_HEIGHT + SPACE_BETWEEN_BUTTONS) <= position.y
-						&& position.y <= SCREEN_HEIGHT + SPACE_BETWEEN_BUTTONS + (i + 1) * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
-					{
-						y = i;
-					}
-					++i;
-				}
-			}
+			ReturnDefaultColors(buttons);
 
-			if (x == 4)
-			{
-				if ((SCREEN_HEIGHT + 3 * BUTTON_HEIGHT + 5 * SPACE_BETWEEN_BUTTONS) <= position.y
-					&& position.y <= (SCREEN_HEIGHT + 5 * BUTTON_HEIGHT + 6 * SPACE_BETWEEN_BUTTONS))
-				{
-					y = 3;
-				}
-			}
+			int index = DeterminationButtonIndex(sf::Mouse::getPosition(window));
 
-			if (y == 4)
+			if (index != ANY_BUTTONS)
 			{
-				if (SPACE_BETWEEN_BUTTONS <= position.x
-					&& position.x <= 2 * (SPACE_BETWEEN_BUTTONS + BUTTON_WIDTH))
-				{
-					x = 0;
-				}
-			}
-
-			if (x != -1
-				&& y != -1)
-			{
-				int index = x + COUNT_BUTTON_HORIZONTAL * y;
 				auto currButton = &buttons[index];
 				currButton->button.setFillColor(sf::Color(179, 179, 179, 255));
 				if (index == 19)
