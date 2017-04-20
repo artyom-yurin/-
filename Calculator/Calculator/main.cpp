@@ -188,7 +188,106 @@ struct Parser
 	bool canSign = false;
 	bool canCount = false;
 	bool firstNumber = false;
+	bool isResult = false;
 };
+
+void ParseSymbol(std::string & symbol, Parser & parser, int & countBrack)
+{
+	if ("0" <= symbol && symbol <= "9")
+	{
+		if (parser.isResult)
+		{
+			parser.canNumber = true;
+		}
+		if (!parser.canNumber)
+		{
+			symbol = "";
+		}
+		else
+		{
+			parser.canCloseBracke = true;
+			parser.canSign = true;
+			parser.canNigativeValue = true;
+			parser.canCount = true;
+			parser.canOpenBracke = false;
+			if (!parser.firstNumber)
+			{
+				parser.firstNumber = true;
+				parser.canPoint = true;
+			}
+		}
+	}
+	else if (symbol == "+"
+		|| symbol == "-"
+		|| symbol == "*"
+		|| symbol == "/"
+		|| symbol == "%")
+	{
+		if (!parser.canSign)
+		{
+			symbol = "";
+		}
+		else
+		{
+			parser.isResult = false;
+			parser.canNumber = true;
+			parser.canOpenBracke = true;
+			parser.firstNumber = false;
+			parser.canPoint = false;
+			parser.canSign = false;
+			parser.canCloseBracke = false;
+			parser.canCount = false;
+			parser.canNigativeValue = false;
+		}
+	}
+	else if (symbol == ".")
+	{
+		if (!parser.canPoint)
+		{
+			symbol = "";
+		}
+		else
+		{
+			parser.canPoint = false;
+			parser.canSign = false;
+			parser.canCount = false;
+		}
+	}
+	else if (symbol == "(")
+	{
+		if (parser.canOpenBracke)
+		{
+			countBrack++;
+		}
+		else
+		{
+			symbol = "";
+		}
+	}
+	else if (symbol == ")")
+	{
+		if (parser.canCloseBracke)
+		{
+			if (countBrack > 0)
+			{
+				countBrack--;
+				parser.canSign = true;
+			}
+			else
+			{
+				symbol = "";
+			}
+			if (countBrack == 0)
+			{
+				parser.canCloseBracke = false;
+			}
+		}
+		else
+		{
+			symbol = "";
+		}
+	}
+}
 
 struct Application
 {
@@ -308,6 +407,7 @@ struct Application
 							parser.canSign = false;
 							parser.canCount = false;
 							parser.firstNumber = false;
+							parser.isResult = false;
 							break;
 						}
 						case 1:
@@ -368,7 +468,7 @@ struct Application
 									parser.canNumber = true;
 									parser.canPoint = false;
 									parser.canOpenBracke = true;
-									parser.canCloseBracke = (expression[expression.length() - 1] == '(');
+									parser.canCloseBracke = (!expression.empty() && expression[expression.length() - 1] == '(');
 									parser.canNigativeValue = false;
 									parser.canSign = false;
 									parser.canCount = false;
@@ -451,6 +551,7 @@ struct Application
 									}
 									InsertUnarySign(expression, k);
 								}
+								parser.isResult = false;
 							}
 							break;
 						}
@@ -471,6 +572,7 @@ struct Application
 								parser.canPoint = false;
 								parser.canNumber = false;
 								parser.canOpenBracke = false;
+								parser.isResult = true;
 							}
 							break;
 						}
@@ -479,94 +581,12 @@ struct Application
 							if (textExpression.getGlobalBounds().width < SCREEN_WIDTH - SPACE_BETWEEN_BUTTONS)
 							{
 								std::string sym = currButton->name.getString();
-								if ("0" <= sym && sym <= "9")
+								ParseSymbol(sym, parser, countBrack);
+								if (parser.isResult &&
+									parser.canNumber)
 								{
-									if (!parser.canNumber)
-									{
-										sym = "";
-									}
-									else
-									{
-										parser.canCloseBracke = true;
-										parser.canSign = true;
-										parser.canNigativeValue = true;
-										parser.canCount = true;
-										parser.canOpenBracke = false;
-										if (!parser.firstNumber)
-										{
-											parser.firstNumber = true;
-											parser.canPoint = true;
-										}
-									}
-								}
-								else if (sym == "+"
-									|| sym == "-"
-									|| sym == "*"
-									|| sym == "/"
-									|| sym == "%")
-								{
-									if (!parser.canSign)
-									{
-										sym = "";
-									}
-									else
-									{
-										parser.canNumber = true;
-										parser.canOpenBracke = true;
-										parser.firstNumber = false;
-										parser.canPoint = false;
-										parser.canSign = false;
-										parser.canCloseBracke = false;
-										parser.canCount = false;
-										parser.canNigativeValue = false;
-									}
-								}
-								else if (sym == ".")
-								{
-									if (!parser.canPoint)
-									{
-										sym = "";
-									}
-									else
-									{
-										parser.canPoint = false;
-										parser.canSign = false;
-										parser.canCount = false;
-									}
-								}
-								else if (sym == "(")
-								{
-									if (parser.canOpenBracke)
-									{
-										countBrack++;
-									}
-									else
-									{
-										sym = "";
-									}
-								}
-								else if (sym == ")")
-								{
-									if (parser.canCloseBracke)
-									{
-										if (countBrack > 0)
-										{
-											countBrack--;
-											parser.canSign = true;
-										}
-										else
-										{
-											sym = "";
-										}
-										if (countBrack == 0)
-										{
-											parser.canCloseBracke = false;
-										}
-									}
-									else
-									{
-										sym = "";
-									}
+									expression = "";
+									parser.isResult = false;
 								}
 								expression += sym;
 							}
