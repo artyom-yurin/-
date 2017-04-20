@@ -373,6 +373,199 @@ void ReturnDefaultColors(Button(&buttons)[SIZE])
 	buttons[19].button.setFillColor(sf::Color(239, 105, 8, 255));
 }
 
+void DeleteExpression(std::string & expression, Parser & parser)
+{
+	expression = "";
+	parser.canNumber = true;
+	parser.canPoint = false;
+	parser.canOpenBracke = true;
+	parser.canCloseBracke = false;
+	parser.canNigativeValue = false;
+	parser.canSign = false;
+	parser.canCount = false;
+	parser.firstNumber = false;
+	parser.isResult = false;
+}
+
+void DeleteElement(std::string & expression, Parser & parser)
+{
+	while (!expression.empty() &&
+		(isdigit(expression[expression.length() - 1]) ||
+			expression[expression.length() - 1] == '.'))
+	{
+		expression.pop_back();
+	}
+	parser.canNumber = true;
+	parser.canOpenBracke = true;
+	parser.firstNumber = false;
+	parser.canPoint = false;
+	parser.canSign = false;
+	parser.canCloseBracke = false;
+	parser.canCount = false;
+	parser.canNigativeValue = false;
+	DeleteUnarySign(expression);
+}
+
+void DeleteSymbol(std::string & expression, Parser & parser, int & countBrack)
+{
+	if (!expression.empty())
+	{
+		char sym = expression[expression.length() - 1];
+		expression.pop_back();
+		DeleteUnarySign(expression);
+		if (sym == '(')
+		{
+			countBrack--;
+		}
+		else if (sym == ')')
+		{
+			countBrack++;
+		}
+		else if (sym == '.')
+		{
+			parser.canPoint = true;
+		}
+		else if (sym == '+'
+			|| sym == '-'
+			|| sym == '*'
+			|| sym == '/'
+			|| sym == '%')
+		{
+			parser.canSign = true;
+			parser.canCount = true;
+		}
+		else if (expression.empty()
+			|| expression[expression.length() - 1] == '+'
+			|| expression[expression.length() - 1] == '-'
+			|| expression[expression.length() - 1] == '*'
+			|| expression[expression.length() - 1] == '/'
+			|| expression[expression.length() - 1] == '%'
+			|| expression[expression.length() - 1] == '(')
+		{
+			parser.canNumber = true;
+			parser.canPoint = false;
+			parser.canOpenBracke = true;
+			parser.canCloseBracke = (!expression.empty() && expression[expression.length() - 1] == '(');
+			parser.canNigativeValue = false;
+			parser.canSign = false;
+			parser.canCount = false;
+			parser.firstNumber = false;
+		}
+	}
+}
+
+void MakeNegativeValue(std::string & expression, Parser & parser)
+{
+	if (parser.canNigativeValue)
+	{
+		int k = expression.length() - 1;
+		while (k > 0 &&
+			(isdigit(expression[k]) ||
+				expression[k] == '.'))
+		{
+			k--;
+		}
+		if (expression[k] == ')')
+		{
+			int closeBracker = 1;
+			while (closeBracker)
+			{
+				k--;
+				if (expression[k] == ')')
+				{
+					closeBracker++;
+				}
+				else if (expression[k] == '(')
+				{
+					closeBracker--;
+				}
+			}
+			k--;
+		}
+		if (expression[k] == '+')
+		{
+			if (k == 0
+				|| expression[k - 1] == '+'
+				|| expression[k - 1] == '-'
+				|| expression[k - 1] == '*'
+				|| expression[k - 1] == '/'
+				|| expression[k - 1] == '%'
+				|| expression[k - 1] == '(')
+			{
+				expression[k] = '-';
+			}
+			else
+			{
+				InsertUnarySign(expression, k + 1);
+			}
+
+		}
+		else if (expression[k] == '-')
+		{
+			if (k == 0
+				|| expression[k - 1] == '+'
+				|| expression[k - 1] == '-'
+				|| expression[k - 1] == '*'
+				|| expression[k - 1] == '/'
+				|| expression[k - 1] == '%'
+				|| expression[k - 1] == '(')
+			{
+				expression[k] = '+';
+			}
+			else
+			{
+				InsertUnarySign(expression, k + 1);
+			}
+		}
+		else if (expression[k] != 'f')
+		{
+			if (expression[k] == '*'
+				|| expression[k] == '/'
+				|| expression[k] == '%'
+				|| expression[k] == '(')
+			{
+				k++;
+			}
+			InsertUnarySign(expression, k);
+		}
+		parser.isResult = false;
+	}
+}
+
+void CountExpression(std::string & expression, Parser & parser, int & countBrack)
+{
+	if (!expression.empty() && parser.canCount)
+	{
+		while (countBrack)
+		{
+			expression += ")";
+			countBrack--;
+		}
+		expression = PrintExpressionResult(expression);
+		parser.canCloseBracke = true;
+		parser.canSign = true;
+		parser.canNigativeValue = true;
+		parser.canCount = true;
+		parser.canPoint = false;
+		parser.canNumber = false;
+		parser.canOpenBracke = false;
+		parser.isResult = true;
+	}
+}
+
+void AddSymbol(std::string & expression, Parser & parser, int & countBrack, Button * currButton)
+{
+	std::string sym = currButton->name.getString();
+	ParseSymbol(sym, parser, countBrack);
+	if (parser.isResult &&
+		parser.canNumber)
+	{
+		expression = "";
+		parser.isResult = false;
+	}
+	expression += sym;
+}
+
 struct Application
 {
 	sf::RenderWindow window;
@@ -423,197 +616,34 @@ struct Application
 					{
 						case 0:
 						{
-							expression = "";
-							parser.canNumber = true;
-							parser.canPoint = false;
-							parser.canOpenBracke = true;
-							parser.canCloseBracke = false;
-							parser.canNigativeValue = false;
-							parser.canSign = false;
-							parser.canCount = false;
-							parser.firstNumber = false;
-							parser.isResult = false;
+							DeleteExpression(expression, parser);
 							break;
 						}
 						case 1:
 						{
-							while (!expression.empty() && 
-								(isdigit(expression[expression.length() - 1]) ||
-									expression[expression.length() - 1] == '.'))
-							{
-								expression.pop_back();
-							}
-							parser.canNumber = true;
-							parser.canOpenBracke = true;
-							parser.firstNumber = false;
-							parser.canPoint = false;
-							parser.canSign = false;
-							parser.canCloseBracke = false;
-							parser.canCount = false;
-							parser.canNigativeValue = false;
-							DeleteUnarySign(expression);
+							DeleteElement(expression, parser);
 							break;
 						}
 						case 2:
 						{
-							if (!expression.empty())
-							{
-								char sym = expression[expression.length() - 1];
-								expression.pop_back();
-								DeleteUnarySign(expression);
-								if (sym == '(')
-								{
-									countBrack--;
-								}
-								else if (sym == ')')
-								{
-									countBrack++;
-								}
-								else if (sym == '.')
-								{
-									parser.canPoint = true;
-								}
-								else if (sym == '+'
-									|| sym == '-'
-									|| sym == '*'
-									|| sym == '/'
-									|| sym == '%')
-								{
-									parser.canSign = true;
-									parser.canCount = true;
-								}
-								else if (expression.empty() 
-									|| expression[expression.length() - 1] == '+'
-									|| expression[expression.length() - 1] == '-'
-									|| expression[expression.length() - 1] == '*'
-									|| expression[expression.length() - 1] == '/'
-									|| expression[expression.length() - 1] == '%'
-									|| expression[expression.length() - 1] == '(')
-								{
-									parser.canNumber = true;
-									parser.canPoint = false;
-									parser.canOpenBracke = true;
-									parser.canCloseBracke = (!expression.empty() && expression[expression.length() - 1] == '(');
-									parser.canNigativeValue = false;
-									parser.canSign = false;
-									parser.canCount = false;
-									parser.firstNumber = false;
-								}
-							}
+							DeleteSymbol(expression, parser, countBrack);
 							break;
 						}
 						case 14:
 						{
-							if (parser.canNigativeValue)
-							{
-								int k = expression.length() - 1;
-								while (k > 0 &&
-									(isdigit(expression[k]) ||
-										expression[k] == '.'))
-								{
-									k--;
-								}
-								if (expression[k] == ')')
-								{
-									int closeBracker = 1;
-									while (closeBracker)
-									{
-										k--;
-										if (expression[k] == ')')
-										{
-											closeBracker++;
-										}
-										else if (expression[k] == '(')
-										{
-											closeBracker--;
-										}
-									}
-									k--;
-								}
-								if (expression[k] == '+')
-								{
-									if (k == 0
-										|| expression[k - 1] == '+'
-										|| expression[k - 1] == '-'
-										|| expression[k - 1] == '*'
-										|| expression[k - 1] == '/'
-										|| expression[k - 1] == '%'
-										|| expression[k - 1] == '(')
-									{
-										expression[k] = '-';
-									}
-									else
-									{
-										InsertUnarySign(expression, k + 1);
-									}
-
-								}
-								else if (expression[k] == '-')
-								{
-									if (k == 0
-										|| expression[k - 1] == '+'
-										|| expression[k - 1] == '-'
-										|| expression[k - 1] == '*'
-										|| expression[k - 1] == '/'
-										|| expression[k - 1] == '%'
-										|| expression[k - 1] == '(')
-									{
-										expression[k] = '+';
-									}
-									else
-									{
-										InsertUnarySign(expression, k + 1);
-									}
-								}
-								else if (expression[k] != 'f')
-								{
-									if (expression[k] == '*'
-										|| expression[k] == '/'
-										|| expression[k] == '%'
-										|| expression[k] == '(')
-									{
-										k++;
-									}
-									InsertUnarySign(expression, k);
-								}
-								parser.isResult = false;
-							}
+							MakeNegativeValue(expression, parser);
 							break;
 						}
 						case 19:
 						{
-							if (!expression.empty() && parser.canCount)
-							{
-								while (countBrack)
-								{
-									expression += ")";
-									countBrack--;
-								}
-								expression = PrintExpressionResult(expression);
-								parser.canCloseBracke = true;
-								parser.canSign = true;
-								parser.canNigativeValue = true;
-								parser.canCount = true;
-								parser.canPoint = false;
-								parser.canNumber = false;
-								parser.canOpenBracke = false;
-								parser.isResult = true;
-							}
+							CountExpression(expression, parser, countBrack);
 							break;
 						}
 						default:
 						{
 							if (textExpression.getGlobalBounds().width < SCREEN_WIDTH - SPACE_BETWEEN_BUTTONS)
 							{
-								std::string sym = currButton->name.getString();
-								ParseSymbol(sym, parser, countBrack);
-								if (parser.isResult &&
-									parser.canNumber)
-								{
-									expression = "";
-									parser.isResult = false;
-								}
-								expression += sym;
+								AddSymbol(expression, parser, countBrack, currButton);
 							}
 							break;
 						}
