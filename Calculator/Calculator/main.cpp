@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <string>
 #include <sstream>
+#include <iomanip>
 #include "Expression.h"
 #include <SFML/Graphics.hpp>
 
@@ -17,10 +18,20 @@ const int SIZE = COUNT_BUTTON_HORIZONTAL * COUNT_BUTTON_VERTICAL;
 const int NOT_FOUND = -2;
 const int ANY_BUTTONS = -1;
 
+enum ButtonIndex
+{
+	DELETE_EXPRESSION = 0,
+	DELETE_ONE_ELEMENT = 1,
+	DELETE_ONE_SYMBOL = 2,
+	TOGGLE_SIGN = 14,
+	COUNT = 19,
+};
+const char STR_INFINITY[] = "inf";
+
 double Calculate(const std::string &expression)
 {
 	double result = 0;
-	if (expression.find("inf") == std::string::npos)
+	if (expression.find(STR_INFINITY) == std::string::npos)
 	{
 		Expression *pExpression = CreateExpression(expression);
 		result = CalculateExpression(pExpression);
@@ -42,7 +53,9 @@ std::string PrintExpressionResult(const std::string &expression)
 		const double result = Calculate(expression);
 		std::cout << "'" << expression << "' = " << result << std::endl;
 		std::ostringstream output;
-		output << result;
+		output.setf(std::ios_base::fixed, std::ios_base::floatfield);
+		output << std::setiosflags(std::ios_base::fixed) << result;
+		// TODO: delete ZEROS
 		return output.str();
 	}
 	catch (const std::exception &ex)
@@ -173,16 +186,16 @@ void DeleteUnarySign(std::string & expression)
 	}
 }
 
-void InsertUnarySign(std::string & expression, int it)
+void InsertUnarySign(std::string & expression, int index)
 {
 	auto iter = expression.begin();
-	for (int i = 0; i < it; i++, iter++);
+	std::advance(iter, index);
 	expression.insert(iter, '-');
 }
 
 struct Parser
 {
-	bool canNumber = true;
+	bool canInsertNumber = true;
 	bool canPoint = false;
 	bool canOpenBracke = true;
 	bool canCloseBracke = false;
@@ -199,9 +212,9 @@ void ParseSymbol(std::string & symbol, Parser & parser, int & countBrack)
 	{
 		if (parser.isResult)
 		{
-			parser.canNumber = true;
+			parser.canInsertNumber = true;
 		}
-		if (!parser.canNumber)
+		if (!parser.canInsertNumber)
 		{
 			symbol = "";
 		}
@@ -232,7 +245,7 @@ void ParseSymbol(std::string & symbol, Parser & parser, int & countBrack)
 		else
 		{
 			parser.isResult = false;
-			parser.canNumber = true;
+			parser.canInsertNumber = true;
 			parser.canOpenBracke = true;
 			parser.firstNumber = false;
 			parser.canPoint = false;
@@ -376,7 +389,7 @@ void ReturnDefaultColors(Button(&buttons)[SIZE])
 void DeleteExpression(std::string & expression, Parser & parser)
 {
 	expression = "";
-	parser.canNumber = true;
+	parser.canInsertNumber = true;
 	parser.canPoint = false;
 	parser.canOpenBracke = true;
 	parser.canCloseBracke = false;
@@ -395,7 +408,7 @@ void DeleteElement(std::string & expression, Parser & parser)
 	{
 		expression.pop_back();
 	}
-	parser.canNumber = true;
+	parser.canInsertNumber = true;
 	parser.canOpenBracke = true;
 	parser.firstNumber = false;
 	parser.canPoint = false;
@@ -442,7 +455,7 @@ void DeleteSymbol(std::string & expression, Parser & parser, int & countBrack)
 			|| expression[expression.length() - 1] == '%'
 			|| expression[expression.length() - 1] == '(')
 		{
-			parser.canNumber = true;
+			parser.canInsertNumber = true;
 			parser.canPoint = false;
 			parser.canOpenBracke = true;
 			parser.canCloseBracke = (!expression.empty() && expression[expression.length() - 1] == '(');
@@ -547,7 +560,8 @@ void CountExpression(std::string & expression, Parser & parser, int & countBrack
 		parser.canNigativeValue = true;
 		parser.canCount = true;
 		parser.canPoint = false;
-		parser.canNumber = false;
+		parser.firstNumber = false;
+		parser.canInsertNumber = false;
 		parser.canOpenBracke = false;
 		parser.isResult = true;
 	}
@@ -558,7 +572,7 @@ void AddSymbol(std::string & expression, Parser & parser, int & countBrack, Butt
 	std::string sym = currButton->name.getString();
 	ParseSymbol(sym, parser, countBrack);
 	if (parser.isResult &&
-		parser.canNumber)
+		parser.canInsertNumber)
 	{
 		expression = "";
 		parser.isResult = false;
@@ -610,31 +624,33 @@ struct Application
 				{
 					currButton->button.setFillColor(sf::Color(168, 91, 9, 255));
 				}
+
+				// TODO: use enum instead of magic number
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 				{
 					switch (index)
 					{
-						case 0:
+						case DELETE_EXPRESSION:
 						{
 							DeleteExpression(expression, parser);
 							break;
 						}
-						case 1:
+						case DELETE_ONE_ELEMENT:
 						{
 							DeleteElement(expression, parser);
 							break;
 						}
-						case 2:
+						case DELETE_ONE_SYMBOL:
 						{
 							DeleteSymbol(expression, parser, countBrack);
 							break;
 						}
-						case 14:
+						case TOGGLE_SIGN:
 						{
 							MakeNegativeValue(expression, parser);
 							break;
 						}
-						case 19:
+						case COUNT:
 						{
 							CountExpression(expression, parser, countBrack);
 							break;
